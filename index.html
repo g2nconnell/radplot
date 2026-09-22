@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8"/>
+        <title>Radian Plotter</title>
+        <style>
+            div.plotContainer {
+                width: 800px;
+                height: 500px;
+            }
+            select, input {
+                background-color:rgb(33, 70, 134);
+                color: white;
+                padding: 2px 5px;
+            }
+            textarea#functionText {
+                width: calc(100% - 320px);
+            }
+        </style>
+        <link rel="stylesheet" href="assets/css/radplot.css" />
+        <script type="module" src="assets/js/main.js"></script>
+    </head>
+    <body>
+        <h1>Radian Plotter</h1>
+        <!-- Configuration inputs for generating the plot -->
+        <form id="plotConfigForm">
+            <div class="inputsGroupContainer">
+                <div class="inputContainer sideBySide">
+                    <label for="layoutTitle">Layout Title:</label>
+                    <input type="text" id="layoutTitle" name="layoutTitle" value="Polar Plot of r vs θ (in radians)"/>
+                </div>
+                <div class="inputContainer sideBySide">
+                    <label for="plotName">[optional] Plot Name:</label>
+                    <input type="text" id="plotName" name="plotName" value="" />
+                </div>
+                <div class="inputContainer">
+                    <label class="ontop" for="functionText">Function To Plot:</label>
+                    <textarea id="functionText" name="functionText" placeholder="E.g., sqrt(10 / (cos(2 * theta)))" rows="5"></textarea>
+                    <div id="expressionErrorContainer" class="errorContainer" hidden>
+                        <div class="errortriangle">&#9650;</div>
+                        <div class="errorTextContainer">
+                            <span class="errorIcon">&#9888;</span>
+                            <input id="errorTextInput" type="text" readonly class="errorText" value="" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <details itemid="plotInputs">
+                <summary>Advanced</summary>
+                <div class="inputsGroupContainer verticallyClose">
+                    <div class="inputContainer sideBySide">
+                        <label for="displayMode">Display Mode:</label>
+                        <select id="displayMode" name="displayMode">
+                            <option value="radians">Radians</option>
+                            <option value="degrees">Degrees</option>
+                        </select>
+                    </div>
+
+                    <div class="inputContainer sideBySide">
+                        <label for="pieSliceCount">Number of Pie Slices:</label>
+                        <select id="pieSliceCount" name="pieSliceCount">
+                            <option value="24">24</option>
+                            <option value="12">12</option>
+                            <option value="8">8</option>
+                            <option value="4">4</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="inputsGroupContainer  verticallyClose">
+                    <div class="inputContainer sideBySide">
+                        <label for="ignoreRvalueBeyond">Ignore R-values larger than:</label>
+                        <input id="ignoreRvalueBeyond" name="ignoreRvalueBeyond" type="number" min="10" value="100" />
+                    </div>
+
+                    <div class="inputContainer sideBySide">
+                        <label for="traceMode">Trace Mode:</label>
+                        <select id="traceMode" name="traceMode">
+                            <option value="lines">lines</option>
+                            <option value="lines+markers">lines &amp; markers</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="inputsGroupContainer verticallyClose">
+                    <div class="inputContainer">
+                        <label for="thetasToUse"> [optional] Thetas to Use (comma-separated degrees):</label>
+                        <input type="text" id="thetasToUse" name="thetasToUse" value="">
+                    </div>
+
+                    <div class="inputContainer sideBySide">
+                        <label for="radialaxisRangeStart">Radial Axis Range Start:</label>
+                        <input type="text" id="radialaxisRangeStart" name="radialaxisRangeStart" value="0"/>
+                    </div>
+                    <div class="inputContainer sideBySide">
+                        <label for="radialaxisRangeEnd">Radial Axis Range End:</label>
+                        <input type="text" id="radialaxisRangeEnd" name="radialaxisRangeEnd" value="10"/>
+                    </div>
+                </div>
+            </details>
+            <div class="btnContainer">
+                <button type="submit" form="plotConfigForm">Generate Plot</button>
+                <button type="reset" data-action="resetplot">Reset</button>
+            </div>
+        </form>
+        <div class="plotContainer">
+            <!-- Where the polar plot will be rendered -->
+            <div id="polarPlot"></div>
+        </div>
+        <div class="rValueTableContainer">
+            <!-- Theta / R value table generated here -->
+            <table id="rValueTable"n>
+                <caption>theta - r-value</caption>
+                <thead>
+                    <tr>
+                        <th>theta: radians</th>
+                        <th>theta: degrees</th>
+                        <th>r-value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+    </body>
+</html>

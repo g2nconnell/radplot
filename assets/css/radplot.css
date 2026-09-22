@@ -1,0 +1,115 @@
+html body {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 16px;
+    margin: 20px;
+    padding: 10px;
+}
+
+div.inputContainer {
+    padding: 10px;
+    margin-bottom: 10px;
+}
+
+.sideBySide {
+    display: inline-block;
+    margin-right: 20px;
+}
+
+div.inputsGroupContainer {
+    background-color: rgb(160, 215, 255);
+}
+
+label {
+    font-weight: 700;
+    font-size: 18px;
+    color: #4a4a4a;
+    margin: 0px 10px 0px 0px;
+}
+
+label.ontop {
+    vertical-align: top;
+}
+
+select, textarea, input {
+    background-color:#3d3d3d;
+    color: white;
+    padding: 2px 5px;
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+}
+
+textarea::placeholder, input::placeholder, select::placeholder {
+    color:rgb(158, 180, 201);
+    font-style: italic;
+}
+
+button {
+    border-radius: 50px;
+    padding: 12px;
+    background-color: royalblue;
+    font-family: Arial, Helvetica, sans-serif;
+    font-weight: 700;
+    font-size: 18px;
+    color: #fff;
+    margin-right: 15px;
+}
+
+details {
+    margin-bottom: 20px;
+}
+
+div.btnContainer {
+    margin-top: 25px;
+    margin-bottom: 25px;
+    padding: 20px;
+    border-top:#000 solid 1px;
+    border-bottom: #000 solid 1px;
+}
+
+div.errorContainer {
+    padding: 0px 170px;
+    color: red;
+    position: relative;
+    top: -12px;
+}
+
+span.errorIcon {
+    color: red;
+    font-weight: bold;
+    position: absolute;
+    padding-left: 10px;
+    z-index: 100;
+}
+
+div.errortriangle {
+    color: red;
+    font-size: 18px;
+    position: relative;
+    bottom: -5px;
+    left: 5px;
+}
+
+input.errorText {
+    position: relative;
+    background-color: #fff;
+    color: red;
+    border: red 2px solid;
+    width: calc(100% - 30px);
+    padding-left: 35px;
+}
+
+.inputError {
+    border: red 2px solid;
+}
+
+.verticallyClose {
+    padding: 7px 0px 0px 7px;
+}
+
+div.rValueTableContainer {
+    padding: 20px;
+}
+
+div.rValueTableContainer table th,
+div.rValueTableContainer table td {
+    padding: 5px;
+}
