@@ -4,8 +4,6 @@ import Evaluator from "./evaluator.js";
 export default class Configuration {
 
     constructor(formData) {
-        // this.thetafn = (theta) => { return Math.sqrt(10/Math.cos((2 * theta))); }; // Function to calculate r based on theta
-        /* Math.sqrt(6 * Math.sin(theta));*/  /* 8 / (2 * Math.cos(theta) - 3 * Math.sin(theta)); */
         this.currentExpression = "";
         this.thetafn = null;
         this.ignoreRvalueBeyond = formData.get("ignoreRvalueBeyond");
