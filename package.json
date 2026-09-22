@@ -1,0 +1,25 @@
+{
+  "name": "radplot",
+  "version": "1.0.0",
+  "description": "math equation polar plotter",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "test": "vitest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/g2nconnell/radplot.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/g2nconnell/radplot/issues"
+  },
+  "homepage": "https://github.com/g2nconnell/radplot#readme",
+  "devDependencies": {
+    "jsdom": "^30.1.1",
+    "vitest": "^5.0.1"
+  }
+}
