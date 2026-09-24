@@ -5,7 +5,7 @@ import {
     getPlotLayout,
     getTraceData,
     renderPolarPlot
-} from "../mods/polarplotter.js";
+} from "../assets/js/mods/polarplotter.js";
 
 describe("polarplotter", () => {
     describe("getAxisTickLabels", () => {

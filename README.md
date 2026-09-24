@@ -2,6 +2,7 @@ This is a simple polar plotter for simple math equations.  It supports plots in 
 It includes a parser that reads the supplied math equation text (e.g., "sqrt(10 / cos(2 * theta))") and uses a lexical analyzer to produce a list of tokens.  The tokens then become
 input for a parser which produces an AST.  The AST is then used by an evaluator, along with provided variable values to run the equation over various angular values and plots the results, 
 along with generating a table of r-values.
+This app uses plotly.js as the plotting engine.  Refer to https://github.com/plotly/plotly.js/?tab=MIT-1-ov-file
 
 I made this to simplify my math homework.
 

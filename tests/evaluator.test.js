@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import Evaluator from "../mods/evaluator.js";
+import Evaluator from "../assets/js/mods/evaluator.js";
 
 describe("Evaluator", () => {
     describe("constructor", () => {

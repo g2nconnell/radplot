@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import Lexer from "../mods/lexer.js";
+import Lexer from "../assets/js/mods/lexer.js";
 
 describe("Lexer", () => {
     describe("constructor", () => {
