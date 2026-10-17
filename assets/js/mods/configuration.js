@@ -6,15 +6,18 @@ export default class Configuration {
     constructor(formData) {
         this.currentExpression = "";
         this.thetafn = null;
-        this.ignoreRvalueBeyond = formData.get("ignoreRvalueBeyond");
+        this.chartType = formData.get("chartType");
+        this.xValsAreAngles = formData.get("xValsAreAngles") === "on";
+        this.ignoreRvalueBeyond = parseInt(formData.get("ignoreRvalueBeyond"));
         this.thetasToUse = this.getThetasToUse(formData);
         this.layoutTitle = formData.get("layoutTitle");
         this.plotName = formData.get("plotName") + "       ";
-        this.pieSliceCount = formData.get("pieSliceCount");
-        this.displayMode = formData.get("displayMode");
-        this.radialaxisRange = this.getRadialAxisRange(formData);
+        this.xaxisTickCount = formData.get("xaxisTickCount");
+        this.displayMode = formData.get("thetaDisplayMode");
         this.traceMode = formData.get("traceMode");
         this.includeExpressionInTitle = true;
+        this.xaxisRange = formData.get("xaxisRange") ? formData.get("xaxisRange").split(',').map(Number) : null;
+        this.optionalDesiredXValues = formData.get("desiredXValues") ? formData.get("desiredXValues").split(',').map(Number) : null;
         this.ast = null;
         try {
             const expression = formData.get("functionText");
@@ -23,7 +26,7 @@ export default class Configuration {
             const parser = new Parser(tokens);
             const ast = parser.parse();
             this.ast = ast;
-            const thetaFn = function(theta) { return this.calculate({theta: theta}); }.bind(this);
+            const thetaFn = function(x) { return this.calculate({theta: x, x: x}); }.bind(this);
             this.thetafn = thetaFn;
             this.currentExpression =  expression;
         } catch (error) {
@@ -60,27 +63,12 @@ export default class Configuration {
         return thetas;
     }
 
-    getRadialAxisRange(formData) {
-        let range = null;
-        const rangeStartString = formData.get("radialaxisRangeStart");
-        const rangeEndString = formData.get("radialaxisRangeEnd");
-        if (rangeStartString && rangeEndString) {
-            try {
-                const rangeStart = parseInt(rangeStartString);
-                const rangeEnd = parseInt(rangeEndString);
-                range = [rangeStart, rangeEnd];
-            } catch (error) {
-                console.log(error);
-            }
-        }
-        return range;
-    }
-
     getRvalueFn() {
         const rValueFunction = (theta, config = {} ) => {
             const retValueArray = [];
+            const isPolar = config.chartType === 'polar';
             let rValue = this.thetafn(theta);
-            if (rValue != NaN && rValue >= 0 && (this.ignoreRvalueBeyond === 0 || (this.ignoreRvalueBeyond > 0 && rValue <= this.ignoreRvalueBeyond))) {
+            if (rValue != NaN && !isPolar || rValue >= 0 && (this.ignoreRvalueBeyond === 0 || (this.ignoreRvalueBeyond > 0 && rValue <= this.ignoreRvalueBeyond))) {
                 // if equation uses a square root, return both the positive and negative values of r. Otherwise, return only the positive value of r.
                 retValueArray.push(rValue.toFixed(1));
                 retValueArray.push((-1 * rValue).toFixed(1));

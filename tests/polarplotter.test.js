@@ -1,8 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
 import {
     getAxisTickLabels,
-    getPlotData,
-    getPlotLayout,
+    getPolarPlotData,
+    getPolarPlotLayout,
     getTraceData,
     renderPolarPlot
 } from "../assets/js/mods/polarplotter.js";
@@ -10,54 +10,68 @@ import {
 describe("polarplotter", () => {
     describe("getAxisTickLabels", () => {
         it.each([
-            [24, 24, "π/12", "15°"],
-            [12, 12, "π/6", "30°"],
-            [8, 8, "π/4", "45°"],
-            [4, 4, "π/2", "90°"]
-        ])("returns labels for %s slices", (sliceCount, length, radianLabel, degreeLabel) => {
+            [24, "π/12", "15°"],
+            [12, "π/6", "30°"],
+            [8, "π/4", "45°"],
+            [4, "π/2", "90°"]
+        ])("returns labels for %s slices", (sliceCount, radianLabel, degreeLabel) => {
             const labels = getAxisTickLabels(sliceCount);
+            const zeroIndex = sliceCount;
 
-            expect(labels.tickValues).toHaveLength(length);
-            expect(labels.radianTickLabels).toHaveLength(length);
-            expect(labels.degreeTickLabels).toHaveLength(length);
-            expect(labels.radianTickLabels[1]).toBe(radianLabel);
-            expect(labels.degreeTickLabels[1]).toBe(degreeLabel);
+            expect(labels.tickValues).toHaveLength(sliceCount * 2 + 1);
+            expect(labels.radianTickLabels).toHaveLength(sliceCount * 2 + 1);
+            expect(labels.degreeTickLabels).toHaveLength(sliceCount * 2 + 1);
+            expect(labels.tickValues[zeroIndex + 1]).toBe(360 / sliceCount);
+            expect(labels.radianTickLabels[zeroIndex + 1]).toBe(radianLabel);
+            expect(labels.degreeTickLabels[zeroIndex + 1]).toBe(degreeLabel);
         });
     });
 
-    describe("getPlotLayout", () => {
+    describe("getPolarPlotLayout", () => {
         it("uses radians by default and includes the radial range", () => {
-            const layout = getPlotLayout({
+            const layout = getPolarPlotLayout({
                 title: "Polar Plot",
                 displayMode: "radians",
-                pieSliceCount: 4,
-                radialaxisRange: [0, 5]
+                xaxisTickCount: 4,
+                xaxisRange: [0, 5]
             });
 
             expect(layout.title).toEqual({ text: "Polar Plot" });
-            expect(layout.polar.angularaxis.tickvals).toEqual([0, 90, 180, 270]);
+            expect(layout.polar.angularaxis.tickvals).toEqual([
+                -360, -270, -180, -90, 0, 90, 180, 270, 360
+            ]);
             expect(layout.polar.angularaxis.ticktext).toEqual([
+                "-2π",
+                "-3π/2",
+                "-π",
+                "-π/2",
                 "0",
                 "π/2",
                 "π",
-                "3π/2"
+                "3π/2",
+                "2π"
             ]);
             expect(layout.polar.radialaxis.range).toEqual([0, 5]);
         });
 
         it("uses degree labels for degree display mode", () => {
-            const layout = getPlotLayout({
+            const layout = getPolarPlotLayout({
                 title: "Degrees",
                 displayMode: "degrees",
-                pieSliceCount: 4,
-                radialaxisRange: [-2, 2]
+                xaxisTickCount: 4,
+                xaxisRange: [-2, 2]
             });
 
             expect(layout.polar.angularaxis.ticktext).toEqual([
+                "-360°",
+                "-270°",
+                "-180°",
+                "-90°",
                 "0°",
                 "90°",
                 "180°",
-                "270°"
+                "270°",
+                "360°"
             ]);
             expect(layout.polar.angularaxis.period).toBe(360);
         });
@@ -114,8 +128,8 @@ describe("polarplotter", () => {
                 plotName: "Radius",
                 traceMode: "lines",
                 layoutTitle: "Plot",
-                pieSliceCount: 4,
-                radialaxisRange: [0, 2]
+                xaxisTickCount: 4,
+                xaxisRange: [0, 2]
             };
 
             renderPolarPlot(plotData);
@@ -144,8 +158,8 @@ describe("polarplotter", () => {
                 plotName: "Radius",
                 traceMode: "lines",
                 layoutTitle: "Plot",
-                pieSliceCount: 4,
-                radialaxisRange: [0, 2]
+                xaxisTickCount: 4,
+                xaxisRange: [0, 2]
             };
 
             renderPolarPlot(plotData);
@@ -157,7 +171,7 @@ describe("polarplotter", () => {
         });
     });
 
-    describe("getPlotData", () => {
+    describe("getPolarPlotData", () => {
         it("converts selected degree values and builds plot data", () => {
             const config = {
                 thetasToUse: [0, 90],
@@ -165,21 +179,21 @@ describe("polarplotter", () => {
                 layoutTitle: "Plot r vs theta",
                 currentExpression: "theta",
                 plotName: "Radius",
-                pieSliceCount: 4,
+                xaxisTickCount: 4,
                 displayMode: "radians",
-                radialaxisRange: [0, 2]
+                xaxisRange: [0, 2]
             };
 
-            expect(getPlotData(config)).toEqual({
+            expect(getPolarPlotData(config)).toEqual({
                 rValues: ["1.0", "1.0"],
                 minusRValues: ["-1.0", "-1.0"],
                 degreeValues: [0, 90],
                 thetaValues: [0, Math.PI / 2],
                 layoutTitle: "Plot r = theta vs theta",
                 plotName: "Radius",
-                pieSliceCount: 4,
+                xaxisTickCount: 4,
                 displayMode: "radians",
-                radialaxisRange: [0, 2]
+                xaxisRange: [0, 2]
             });
         });
 
@@ -190,13 +204,13 @@ describe("polarplotter", () => {
                 layoutTitle: "Polar Plot",
                 currentExpression: "sin(theta)",
                 plotName: "       ",
-                pieSliceCount: 24,
+                xaxisTickCount: 24,
                 displayMode: "radians",
-                radialaxisRange: [0, 1]
+                xaxisRange: [0, 1]
             };
 
-            expect(getPlotData(config).plotName).toBe("r = sin(theta)");
-            expect(getPlotData(config).minusRValues).toBeNull();
+            expect(getPolarPlotData(config).plotName).toBe("r = sin(theta)");
+            expect(getPolarPlotData(config).minusRValues).toBeNull();
         });
     });
 });

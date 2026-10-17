@@ -3,44 +3,63 @@
     <head>
         <meta charset="UTF-8"/>
         <title>Radian Plotter</title>
-        <style>
-            button {
-                background-color: aqua;
-                color:blue;
-                font-size: 18px;
-            }
-            div.plotContainer {
-                width: 800px;
-                height: 500px;
-            }
-            select, input {
-                background-color:rgb(33, 70, 134);
-                color: white;
-                padding: 2px 5px;
-            }
-            textarea#functionText {
-                width: calc(100% - 320px);
-            }
-        </style>
         <link rel="stylesheet" href="assets/css/radplot.css" />
         <script type="module" src="assets/js/main.js"></script>
     </head>
     <body>
-        <h1>Radian Plotter</h1>
+        <h1>Function Plotter</h1>
         <!-- Configuration inputs for generating the plot -->
         <form id="plotConfigForm">
-            <div class="inputsGroupContainer">
+            <div class="inputsGroupContainer outerContainer">
                 <div class="inputContainer sideBySide">
-                    <label for="layoutTitle">Layout Title:</label>
-                    <input type="text" id="layoutTitle" name="layoutTitle" value="Polar Plot of r vs θ (in radians)"/>
+                    <label for="layoutTitle">Title:</label>
+                    <input type="text" id="layoutTitle" name="layoutTitle" value="Plot 1"/>
                 </div>
                 <div class="inputContainer sideBySide">
                     <label for="plotName">[optional] Plot Name:</label>
                     <input type="text" id="plotName" name="plotName" value="" />
                 </div>
+                <div class="inputsGroupContainer  verticallyClose">
+                    <div class="inputContainer sideBySide">
+                        <label>Chart Type:</label>
+                        <input type="radio" id="polarChoice" name="chartType" value="polar" checked />
+                        <label for="polarChoice">Polar</label>
+                        <input type="radio" id="cartesianChoice" name="chartType" value="cartesian" />
+                        <label for="cartesianChoice">Cartesian</label>
+                    </div>
+                </div>
+                <div class="inputsGroupContainer  verticallyClose">
+                    <div id="xValsAreAnglesContainer" class="inputContainer sideBySide" style="display:none;">
+                        <label for="xValsAreAngles">X Values Are Angles (degrees or radians):</label>
+                        <input type="checkbox" id="xValsAreAngles" name="xValsAreAngles" checked/>
+                    </div>
+                    <div id="thetaDisplayModeContainer" class="inputContainer sideBySide">
+                        <label for="thetaDisplayMode">Angle Display:</label>
+                        <select id="thetaDisplayMode" name="thetaDisplayMode">
+                            <option value="degrees">Degrees</option>
+                            <option value="radians" selected>Radians</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="inputsGroupContainer  verticallyClose">
+                    <div class="inputContainer sideBySide">
+                        <label for="xaxisTickCount">X-axis Tick Count:</label>
+                        <select id="xaxisTickCount" name="xaxisTickCount">
+                            <option value="24">24</option>
+                            <option value="12">12</option>
+                            <option value="8" selected>8</option>
+                            <option value="4">4</option>
+                        </select>
+                    </div>
+                    <div class="inputContainer sideBySide">
+                        <label for="xaxisRange">X-axis Range (comma-separated):</label>
+                        <input type="text" id="xaxisRange" name="xaxisRange" value="0,10"/>
+                    </div>
+                </div>
                 <div class="inputContainer">
-                    <label class="ontop" for="functionText">Function To Plot:</label>
+                    <label class="ontop" for="functionText">y = </label>
                     <textarea id="functionText" name="functionText" placeholder="E.g., sqrt(10 / (cos(2 * theta)))" rows="5"></textarea>
+                    <button type="button"popovertarget="functionInputInfo" class="infoButton"></button>
                     <div id="expressionErrorContainer" class="errorContainer" hidden>
                         <div class="errortriangle">&#9650;</div>
                         <div class="errorTextContainer">
@@ -48,59 +67,59 @@
                             <input id="errorTextInput" type="text" readonly class="errorText" value="" />
                         </div>
                     </div>
+                    <div id="functionInputInfo" class="popoverContent" popover>
+                        <p>Enter a mathematical expression for y in terms of x (or theta if using polar coordinates). Use standard mathematical functions and operators. For example:</p>
+                        <ul>
+                            <li><code>sqrt(10 / (cos(2 * theta)))</code></li>
+                            <li><code>sin(x) + cos(x)</code></li>
+                            <li><code>exp(-x^2)</code></li>
+                        </ul>
+                        <p>Use explicit multiplication (e.g., 2 * x instead of 2x).</p>
+                        <p>Ensure that your expression is valid and does not contain any syntax errors.</p>
+                    </div>
+                </div>
+                <div id="desiredXValuesContainer" class="inputsGroupContainer  verticallyClose">
+                    <label for="desiredXValues">[optional] Desired X Values to Display In Table:</label>
+                    <input type="text" id="desiredXValues" name="desiredXValues" placeholder="Comma-separated x-values to list in results table." />
+                    <button type="button"popovertarget="desiredXvaluesInputInfo" class="infoButton"></button>
+                    <div id="desiredXvaluesInputInfo" class="popoverContent" popover>
+                        <p>Enter a list of specific x-values (or theta values for polar plots) that you want to see in the results table. Separate each value with a comma. For example:</p>
+                        <ul>
+                            <li><code>-3, -2, -1, 0, 1, 2, 3</code></li>
+                            <li><code>0, pi/4, pi/2, 3*pi/4, pi</code></li>
+                        </ul>
+                        <p>If you leave this field empty, the table will display all calculated values based on the x-axis range and tick count.</p>
+                    </div>
                 </div>
             </div>
-            <details itemid="plotInputs">
-                <summary>Advanced</summary>
-                <div class="inputsGroupContainer verticallyClose">
-                    <div class="inputContainer sideBySide">
-                        <label for="displayMode">Display Mode:</label>
-                        <select id="displayMode" name="displayMode">
-                            <option value="radians">Radians</option>
-                            <option value="degrees">Degrees</option>
-                        </select>
+            <details itemid="polarPlotInputs">
+                <summary>Advanced Polar Plot Settings</summary>
+                <div class="inputsGroupContainer outerContainer">
+                    <div class="inputsGroupContainer  verticallyClose">
+                        <div class="inputContainer sideBySide">
+                            <label for="ignoreRvalueBeyond">Ignore r-values larger than:</label>
+                            <input id="ignoreRvalueBeyond" name="ignoreRvalueBeyond" type="number" min="0" value="100" />
+                        </div>
+                        <div class="inputContainer sideBySide">
+                            <label for="traceMode">Trace:</label>
+                            <select id="traceMode" name="traceMode">
+                                <option value="lines">lines</option>
+                                <option value="lines+markers">lines &amp; markers</option>
+                            </select>
+                        </div>
                     </div>
-
-                    <div class="inputContainer sideBySide">
-                        <label for="pieSliceCount">Number of Pie Slices:</label>
-                        <select id="pieSliceCount" name="pieSliceCount">
-                            <option value="24">24</option>
-                            <option value="12">12</option>
-                            <option value="8">8</option>
-                            <option value="4">4</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="inputsGroupContainer  verticallyClose">
-                    <div class="inputContainer sideBySide">
-                        <label for="ignoreRvalueBeyond">Ignore R-values larger than:</label>
-                        <input id="ignoreRvalueBeyond" name="ignoreRvalueBeyond" type="number" min="10" value="100" />
-                    </div>
-
-                    <div class="inputContainer sideBySide">
-                        <label for="traceMode">Trace Mode:</label>
-                        <select id="traceMode" name="traceMode">
-                            <option value="lines">lines</option>
-                            <option value="lines+markers">lines &amp; markers</option>
-                        </select>
+                    <div class="inputsGroupContainer verticallyClose">
+                        <div class="inputContainer">
+                            <label for="thetasToUse"> [optional] Test Values (comma-separated degrees):</label>
+                            <input type="text" id="thetasToUse" name="thetasToUse" value="">
+                        </div>
                     </div>
                 </div>
-
-                <div class="inputsGroupContainer verticallyClose">
-                    <div class="inputContainer">
-                        <label for="thetasToUse"> [optional] Thetas to Use (comma-separated degrees):</label>
-                        <input type="text" id="thetasToUse" name="thetasToUse" value="">
-                    </div>
-
-                    <div class="inputContainer sideBySide">
-                        <label for="radialaxisRangeStart">Radial Axis Range Start:</label>
-                        <input type="text" id="radialaxisRangeStart" name="radialaxisRangeStart" value="0"/>
-                    </div>
-                    <div class="inputContainer sideBySide">
-                        <label for="radialaxisRangeEnd">Radial Axis Range End:</label>
-                        <input type="text" id="radialaxisRangeEnd" name="radialaxisRangeEnd" value="10"/>
-                    </div>
+            </details>
+            <details itemid="cartesianPlotInputs" style="display:none;">
+                <summary>Advanced Cartesian Plot Settings</summary>
+                <div class="inputsGroupContainer  outerContainer verticallyClose">
+                    <p class="noDetailsAvailable">No advanced settings available.</p>
                 </div>
             </details>
             <div class="btnContainer">
@@ -111,21 +130,8 @@
         <div class="plotContainer">
             <!-- Where the polar plot will be rendered -->
             <div id="polarPlot"></div>
+            <div id="cartesianPlot"></div>
         </div>
-        <div class="rValueTableContainer">
-            <!-- Theta / R value table generated here -->
-            <table id="rValueTable"n>
-                <caption>theta - r-value</caption>
-                <thead>
-                    <tr>
-                        <th>theta: radians</th>
-                        <th>theta: degrees</th>
-                        <th>r-value</th>
-                    </tr>
-                </thead>
-                <tbody>
-                </tbody>
-            </table>
-        </div>
+        <div class="valuesTableContainer"></div>
     </body>
 </html>

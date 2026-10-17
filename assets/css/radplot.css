@@ -16,12 +16,17 @@ div.inputContainer {
 }
 
 div.inputsGroupContainer {
-    background-color: rgb(160, 215, 255);
+    background-color: #dadada;
+}
+
+.outerContainer {
+    padding: 20px;
+    margin-bottom: 20px;
 }
 
 label {
     font-weight: 700;
-    font-size: 18px;
+    font-size: 16px;
     color: #4a4a4a;
     margin: 0px 10px 0px 0px;
 }
@@ -31,15 +36,17 @@ label.ontop {
 }
 
 select, textarea, input {
-    background-color:#3d3d3d;
-    color: white;
     padding: 2px 5px;
     font-family: Verdana, Geneva, Tahoma, sans-serif;
 }
 
 textarea::placeholder, input::placeholder, select::placeholder {
-    color:rgb(158, 180, 201);
     font-style: italic;
+}
+
+textarea#functionText {
+    width: 610px;
+    max-width: 6100px;
 }
 
 button {
@@ -55,6 +62,13 @@ button {
 
 details {
     margin-bottom: 20px;
+}
+
+details p.noDetailsAvailable {
+    font-style: italic;
+    color: #4a4a4a;
+    text-align: center;
+    padding-bottom: 20px;
 }
 
 div.btnContainer {
@@ -105,11 +119,65 @@ input.errorText {
     padding: 7px 0px 0px 7px;
 }
 
-div.rValueTableContainer {
+div.valuesTableContainer {
     padding: 20px;
 }
 
-div.rValueTableContainer table th,
-div.rValueTableContainer table td {
+div.valuesTableContainer table th,
+div.valuesTableContainer table td {
     padding: 5px;
+}
+
+div.valuesTableContainer table td {
+    text-align: right;
+}
+
+div.valuesTableContainer table th {
+    font-size: 20px;
+    text-decoration: underline;
+}
+
+
+table caption {
+    font-weight: bold;
+    font-size: 24px;
+    margin-bottom: 10px;
+    overflow: visible;
+    white-space: nowrap;
+}
+
+input#xaxisRange {
+    width: 115px;
+}
+
+input#ignoreRvalueBeyond {
+    width: 117px;
+}
+
+div#desiredXValuesContainer {
+    padding: 20px 0px 30px 10px;
+}
+
+input#desiredXValues {
+    width: 275px;
+}
+
+button.infoButton {
+    background-color: transparent;
+    border: none;
+    padding: 0px;
+    margin-left: 5px;
+    background-image: url(/assets/images/info_icon_25x25.jpg);
+    width: 25px;
+    height: 25px;
+    cursor: pointer;
+    background-repeat: no-repeat;
+    vertical-align: top;
+}
+
+div.popoverContent {
+    padding: 20px;
+    color: #3855df;
+    background-color: cornsilk;
+    border-radius: 20px;
 }

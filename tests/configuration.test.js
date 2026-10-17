@@ -14,13 +14,13 @@ describe("Configuration", () => {
         it("loads form values and builds the expression AST", () => {
             const config = new Configuration(formData({
                 ignoreRvalueBeyond: 0,
+                chartType: "polar",
                 thetasToUse: "0,90,180",
                 layoutTitle: "Polar plot",
                 plotName: "Cardioid",
-                pieSliceCount: "24",
-                displayMode: "line",
-                radialaxisRangeStart: "-2",
-                radialaxisRangeEnd: "2",
+                xaxisTickCount: "24",
+                thetaDisplayMode: "radians",
+                xaxisRange: "-2,2",
                 traceMode: "full",
                 functionText: "2 * theta"
             }));
@@ -31,9 +31,9 @@ describe("Configuration", () => {
             expect(config.thetasToUse).toEqual([0, 90, 180]);
             expect(config.layoutTitle).toBe("Polar plot");
             expect(config.plotName).toBe("Cardioid       ");
-            expect(config.pieSliceCount).toBe("24");
-            expect(config.displayMode).toBe("line");
-            expect(config.radialaxisRange).toEqual([-2, 2]);
+            expect(config.xaxisTickCount).toBe("24");
+            expect(config.displayMode).toBe("radians");
+            expect(config.xaxisRange).toEqual([-2, 2]);
             expect(config.traceMode).toBe("full");
             expect(config.includeExpressionInTitle).toBe(true);
             expect(config.ast).toEqual({
@@ -86,52 +86,53 @@ describe("Configuration", () => {
         });
     });
 
-    describe("getRadialAxisRange", () => {
-        it("converts both range endpoints to integers", () => {
-            const config = new Configuration(formData({ functionText: "1" }));
+    describe("xaxisRange", () => {
+        it("converts the configured range endpoints to numbers", () => {
+            const config = new Configuration(formData({
+                functionText: "1",
+                xaxisRange: "-5,15"
+            }));
 
-            expect(config.getRadialAxisRange(formData({
-                radialaxisRangeStart: "-5",
-                radialaxisRangeEnd: "15"
-            }))).toEqual([-5, 15]);
+            expect(config.xaxisRange).toEqual([-5, 15]);
         });
 
-        it("returns null when either endpoint is missing", () => {
+        it("returns null when no range is provided", () => {
             const config = new Configuration(formData({ functionText: "1" }));
 
-            expect(config.getRadialAxisRange(formData({
-                radialaxisRangeStart: "-5"
-            }))).toBeNull();
+            expect(config.xaxisRange).toBeNull();
         });
     });
 
     describe("getRvalueFn", () => {
         it("returns positive and negative radial values for a nonnegative result", () => {
             const config = new Configuration(formData({
+                chartType: "polar",
                 ignoreRvalueBeyond: 0,
                 functionText: "theta"
             }));
             const rValueFn = config.getRvalueFn();
 
-            expect(rValueFn(2)).toEqual(["2.0", "-2.0"]);
+            expect(rValueFn(2, config)).toEqual(["2.0", "-2.0"]);
         });
 
         it("returns NaN for negative results", () => {
             const config = new Configuration(formData({
+                chartType: "polar",
                 ignoreRvalueBeyond: 0,
                 functionText: "-theta"
             }));
 
-            expect(config.getRvalueFn()(2)).toEqual([NaN]);
+            expect(config.getRvalueFn()(2, config)).toEqual([NaN]);
         });
 
         it("returns NaN when the configured upper limit is exceeded", () => {
             const config = new Configuration(formData({
+                chartType: "polar",
                 ignoreRvalueBeyond: 5,
                 functionText: "theta"
             }));
 
-            expect(config.getRvalueFn()(6)).toEqual([NaN]);
+            expect(config.getRvalueFn()(6, config)).toEqual([NaN]);
         });
     });
 });
