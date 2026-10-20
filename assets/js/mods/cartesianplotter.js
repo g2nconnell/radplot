@@ -81,8 +81,8 @@ export function getCartesianPlotData(config = {}) {
             args.x = rad;
         }
         const y = config.calculate(args);
-        if (!Number.isFinite(y) || y > 1e6 || y < -1e6) { // Filter out extreme values
-            xValues.push(null);
+        if (!Number.isFinite(y) || (config.xValsAreAngles && (y > 1e3 || y < -1e3))) { // Filter out extreme values
+            xValues.push(x);
             yValues.push(null);
             continue;
         }
