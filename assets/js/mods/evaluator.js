@@ -15,6 +15,12 @@ const functions = {
 
     tan: x => Math.tan(x),
 
+    csc: x => 1 / Math.sin(x),
+
+    sec: x => 1 / Math.cos(x),
+
+    cot: x => 1 / Math.tan(x),
+
     log: Math.log10,
 
     ln: Math.log

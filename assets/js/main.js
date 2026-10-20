@@ -159,7 +159,7 @@ function appendXYTableRows(table, plotData) {
                 xValue = (xValue * Math.PI / 180).toFixed(4); // Convert degrees to radians for display
             }
             xValueTd.textContent = xValue;
-            yValueTd.textContent = plotData.yValues[index].toFixed(3);
+            yValueTd.textContent = plotData.yValues[index] !== null ? plotData.yValues[index].toFixed(3) : "undefined";
             row.appendChild(xValueTd);
             row.appendChild(yValueTd);
             table.tBodies[0].appendChild(row);

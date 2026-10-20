@@ -16,11 +16,17 @@ describe("polarplotter", () => {
             [4, "π/2", "90°"]
         ])("returns labels for %s slices", (sliceCount, radianLabel, degreeLabel) => {
             const labels = getAxisTickLabels(sliceCount);
-            const zeroIndex = sliceCount;
+            const zeroIndex = sliceCount * 3;
 
-            expect(labels.tickValues).toHaveLength(sliceCount * 2 + 1);
-            expect(labels.radianTickLabels).toHaveLength(sliceCount * 2 + 1);
-            expect(labels.degreeTickLabels).toHaveLength(sliceCount * 2 + 1);
+            expect(labels.tickValues).toHaveLength(sliceCount * 6 + 1);
+            expect(labels.tickValues[0]).toBe(-1080);
+            expect(labels.tickValues.at(-1)).toBe(1080);
+            expect(labels.radianTickLabels).toHaveLength(sliceCount * 6 + 1);
+            expect(labels.degreeTickLabels).toHaveLength(sliceCount * 6 + 1);
+            expect(labels.radianTickLabels[0]).toBe("-6π");
+            expect(labels.radianTickLabels.at(-1)).toBe("6π");
+            expect(labels.degreeTickLabels[0]).toBe("-1080°");
+            expect(labels.degreeTickLabels.at(-1)).toBe("1080°");
             expect(labels.tickValues[zeroIndex + 1]).toBe(360 / sliceCount);
             expect(labels.radianTickLabels[zeroIndex + 1]).toBe(radianLabel);
             expect(labels.degreeTickLabels[zeroIndex + 1]).toBe(degreeLabel);
@@ -37,20 +43,8 @@ describe("polarplotter", () => {
             });
 
             expect(layout.title).toEqual({ text: "Polar Plot" });
-            expect(layout.polar.angularaxis.tickvals).toEqual([
-                -360, -270, -180, -90, 0, 90, 180, 270, 360
-            ]);
-            expect(layout.polar.angularaxis.ticktext).toEqual([
-                "-2π",
-                "-3π/2",
-                "-π",
-                "-π/2",
-                "0",
-                "π/2",
-                "π",
-                "3π/2",
-                "2π"
-            ]);
+            expect(layout.polar.angularaxis.tickvals).toEqual(getAxisTickLabels(4).tickValues);
+            expect(layout.polar.angularaxis.ticktext).toEqual(getAxisTickLabels(4).radianTickLabels);
             expect(layout.polar.radialaxis.range).toEqual([0, 5]);
         });
 
@@ -62,17 +56,7 @@ describe("polarplotter", () => {
                 xaxisRange: [-2, 2]
             });
 
-            expect(layout.polar.angularaxis.ticktext).toEqual([
-                "-360°",
-                "-270°",
-                "-180°",
-                "-90°",
-                "0°",
-                "90°",
-                "180°",
-                "270°",
-                "360°"
-            ]);
+            expect(layout.polar.angularaxis.ticktext).toEqual(getAxisTickLabels(4).degreeTickLabels);
             expect(layout.polar.angularaxis.period).toBe(360);
         });
     });

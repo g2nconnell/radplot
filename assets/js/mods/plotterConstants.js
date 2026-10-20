@@ -1,3 +1,25 @@
+function formatRadianTickLabel(degrees) {
+    if (degrees === 0) {
+        return "0";
+    }
+
+    let numerator = degrees;
+    let denominator = 180;
+    let a = Math.abs(numerator);
+    let b = denominator;
+    while (b !== 0) {
+        [a, b] = [b, a % b];
+    }
+    numerator /= a;
+    denominator /= a;
+
+    const sign = numerator < 0 ? "-" : "";
+    const coefficient = Math.abs(numerator) === 1 ? "" : Math.abs(numerator);
+    return denominator === 1
+        ? `${sign}${coefficient}π`
+        : `${sign}${coefficient}π/${denominator}`;
+}
+
 export class PlotterConstants {
     static DefaultDegreeValuesToTest = [
         0, 1, 2,3, 4, 5, 6, 7, 8, 9, 
@@ -38,140 +60,28 @@ export class PlotterConstants {
         350, 351, 352, 353, 354, 355, 356, 357, 358, 359
     ]
 
-    static tickValues24 = [
-        -360, -345, -330, -315, -300, -285,
-        -270, -255, -240, -225, -210, -195,
-        -180, -165, -150, -135, -120, -105,
-        -90, -75, -60, -45, -30, -15,
-        0, 15, 30, 45, 60, 75, 
-        90, 105, 120, 135, 150, 165, 
-        180, 195, 210, 225, 240, 255, 
-        270, 285, 300, 315, 330, 345, 360
-    ]
+    static tickValues24 = Array.from({ length: 145 }, (_, index) => -1080 + index * 15)
     
-    static tickValues12 = [
-        -360, -330, -300, -270, -240, -210,
-        -180, -150, -120, -90, -60, -30,
-        0, 30, 60, 90, 120, 150,
-        180, 210, 240, 270, 300, 330,
-        360
-    ]
+    static tickValues12 = Array.from({ length: 73 }, (_, index) => -1080 + index * 30)
 
-    static tickValues8 = [
-        -360, -315,
-        -270, -225,
-        -180, -135,
-        -90,-45,
-        0, 45, 
-        90, 135,
-        180, 225, 
-        270, 315,
-        360
-    ]
+    static tickValues8 = Array.from({ length: 49 }, (_, index) => -1080 + index * 45)
 
-    static tickValues4 = [
-        -360,
-        -270, 
-        -180, 
-        -90,
-        0, 
-        90,
-        180, 
-        270,
-        360
-    ]
+    static tickValues4 = Array.from({ length: 25 }, (_, index) => -1080 + index * 90)
 
-    static radianTickLabels24 = [
-        '-2π', '-23π/12', '-11π/6', '-7π/4', '-5π/3', '-19π/12',
-        '-3π/2', '-17π/12', '-4π/3', '-5π/4', '-7π/6', '-13π/12',
-        '-π', '-11π/12', '-5π/6', '-3π/4', '-2π/3', '-7π/12',
-        '-π/2', '-5π/12', '-π/3', '-3π/4', '-π/6', '-π/12',
-        '0', 'π/12', 'π/6','π/4', 'π/3', '5π/12', 
-        'π/2', '7π/12', '2π/3','3π/4', '5π/6', '11π/12', 
-        'π', '13π/12', '7π/6', '5π/4', '4π/3', '17π/12', 
-        '3π/2', '19π/12', '5π/3', '7π/4', '11π/6', '23π/12',
-        '2π'
-    ]
+    static radianTickLabels24 = this.tickValues24.map(formatRadianTickLabel)
 
-    static radianTickLabels12 = [
-        '-2π', '-11π/6', '-5π/3',
-        '-3π/2', '-4π/3', '-7π/6',
-        '-π', '-5π/6', '-2π/3',
-        '-π/2', '-π/3', '-π/6',
-        '0', 'π/6', 'π/3',
-        'π/2', '2π/3', '5π/6',
-        'π', '7π/6', '4π/3',
-        '3π/2', '5π/3', '11π/6',
-        '2π'
-    ]
+    static radianTickLabels12 = this.tickValues12.map(formatRadianTickLabel)
 
-    static radianTickLabels8 = [
-        '-2π', '-7π/4',
-        '-3π/2', '-5π/4',
-        '-π', '-3π/4',
-        '-π/2', '-π/4',
-        '0', 'π/4', 
-        'π/2', '3π/4', 
-        'π', '5π/4', 
-        '3π/2', '7π/4', '2π'
-    ]
+    static radianTickLabels8 = this.tickValues8.map(formatRadianTickLabel)
 
-    static radianTickLabels4 = [
-        '-2π',
-        '-3π/2', 
-        '-π', 
-        '-π/2',
-        '0', 
-        'π/2', 
-        'π',
-        '3π/2',
-        '2π'
-    ]
+    static radianTickLabels4 = this.tickValues4.map(formatRadianTickLabel)
 
-    static degreeTickLabels24 = [
-        '-360°', '-345°', '-330°', '-315°', '-300°', '-285°',
-        '-270°', '-255°', '-240°', '-225°', '-210°', '-195°',
-        '-180°', '-165°', '-150°', '-135°', '-120°', '-105°',
-        '-90°', '-75°', '-60°', '-45°', '-30°', '-15°',
-        '0°', '15°', '30°', '45°', '60°', '75°', 
-        '90°', '105°', '120°','135°', '150°', '165°', 
-        '180°', '195°', '210°', '225°', '240°', '255°', 
-        '270°', '285°', '300°', '315°', '330°', '345°', '360°'
-    ]
+    static degreeTickLabels24 = this.tickValues24.map(value => `${value}°`)
 
-    static degreeTickLabels12 = [
-        '-360°', '-330°', '-300°',
-        '-270°', '-240°', '-210°',
-        '-180°', '-150°', '-120°',
-        '-90°', '-60°', '-30°',
-        '0°', '30°', '60°',
-        '90°', '120°', '150°',
-        '180°', '210°', '240°',
-        '270°', '300°', '330°',
-        '360°'
-    ]
+    static degreeTickLabels12 = this.tickValues12.map(value => `${value}°`)
 
-    static degreeTickLabels8 = [
-        '-360°', '-315°',
-        '-270°', '-225°',
-        '-180°', '-135°',
-        '-90°', '-45°',
-        '0°', '45°', 
-        '90°', '135°',
-        '180°', '225°', 
-        '270°', '315°', '360°'
-    ]
+    static degreeTickLabels8 = this.tickValues8.map(value => `${value}°`)
 
-    static degreeTickLabels4 = [
-        '-360°',
-        '-270°',
-        '-180°',
-        '-90°',
-        '0°' ,
-        '90°',
-        '180°' ,
-        '270°',
-        '360°'
-    ]
+    static degreeTickLabels4 = this.tickValues4.map(value => `${value}°`)
     
 }

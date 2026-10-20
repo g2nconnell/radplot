@@ -125,12 +125,12 @@ export function getPolarPlotData(config) {
         const rValuesArray = fn(theta, config);
         const plusRValue = rValuesArray[0];
         const minusRValue = rValuesArray.length == 2 ? rValuesArray[1] : NaN;
-        if (!isNaN(plusRValue)) {
+        if (!isNaN(plusRValue) && Number.isFinite(parseFloat(plusRValue)) && plusRValue <= 1e6 && plusRValue >= -1e6) { // Filter out extreme values
             degreeValues.push(theta * (180 / Math.PI));
             thetaValues.push(theta);
             rValues.push(plusRValue);
         }
-        if (!isNaN(minusRValue)) {
+        if (!isNaN(minusRValue) && Number.isFinite(parseFloat(minusRValue)) && minusRValue <= 1e6 && minusRValue >= -1e6) { // Filter out extreme values
             minusRValues.push(minusRValue);
         }
     }

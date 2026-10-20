@@ -81,8 +81,13 @@ export function getCartesianPlotData(config = {}) {
             args.x = rad;
         }
         const y = config.calculate(args);
+        if (!Number.isFinite(y) || y > 1e6 || y < -1e6) { // Filter out extreme values
+            xValues.push(null);
+            yValues.push(null);
+            continue;
+        }
         xValues.push(x);
-        yValues.push(Number.isFinite(y) ? y : null);
+        yValues.push(y);
     }
 
     return {
