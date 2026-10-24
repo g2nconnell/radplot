@@ -7,7 +7,7 @@
         <script type="module" src="assets/js/main.js"></script>
     </head>
     <body>
-        <h1>Function Plotter</h1>
+        <h1>Math Plotter</h1>
         <!-- Configuration inputs for generating the plot -->
         <form id="plotConfigForm">
             <div class="inputsGroupContainer outerContainer">
@@ -92,7 +92,7 @@
                         <p>Enter a list of specific x-values (or theta values for polar plots) that you want to see in the results table. Separate each value with a comma. For example:</p>
                         <ul>
                             <li><code>-3, -2, -1, 0, 1, 2, 3</code></li>
-                            <li><code>0, pi/4, pi/2, 3*pi/4, pi</code></li>
+                            <li><code>0, 45, 90, 135, 180</code></li>
                         </ul>
                         <p>If you leave this field empty, the table will display all calculated values based on the x-axis range and tick count.</p>
                     </div>
@@ -118,6 +118,14 @@
                         <div class="inputContainer">
                             <label for="thetasToUse"> [optional] Test Values (comma-separated degrees):</label>
                             <input type="text" id="thetasToUse" name="thetasToUse" value="">
+                            <button type="button"popovertarget="thetasToUseInputInfo" class="infoButton"></button>
+                            <div id="thetasToUseInputInfo" class="popoverContent" popover>
+                                <p>Enter a list of specific theta values (in degrees) that you want to see in the results table. Separate each value with a comma. For example:</p>
+                                <ul>
+                                    <li><code>0, 45, 90, 135, 180</code></li>
+                                </ul>
+                                <p>If left empty, a default set of theta values (0 - 360) will be used.</p>
+                            </div>
                         </div>
                     </div>
                 </div>
