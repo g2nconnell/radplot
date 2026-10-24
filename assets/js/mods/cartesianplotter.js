@@ -56,6 +56,7 @@ export function getTraceData(xValues, yValues, traceConfig = {}) {
 
 export function getCartesianPlotData(config = {}) {
     const xaxisRange = config.xaxisRange ?? [-10, 10];
+    const yaxisRange = config.yaxisRange ?? null;
     const sampleCount = config.sampleCount ?? xaxisRange[1] - xaxisRange[0] + 1; // Default to one sample per degree
     if (!Array.isArray(xaxisRange) || xaxisRange.length !== 2 ||
         !xaxisRange.every(Number.isFinite) || xaxisRange[0] >= xaxisRange[1]) {
@@ -81,7 +82,9 @@ export function getCartesianPlotData(config = {}) {
             args.x = rad;
         }
         const y = config.calculate(args);
-        if (!Number.isFinite(y) || (config.xValsAreAngles && (y > 1e3 || y < -1e3))) { // Filter out extreme values
+        const minY = yaxisRange ? yaxisRange[0] : -1e3;
+        const maxY = yaxisRange ? yaxisRange[1] : 1e3;
+        if (!Number.isFinite(y) || (config.xValsAreAngles && (y > maxY || y < minY))) { // Filter out extreme values
             xValues.push(x);
             yValues.push(null);
             continue;

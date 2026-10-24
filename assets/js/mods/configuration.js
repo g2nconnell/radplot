@@ -17,6 +17,8 @@ export default class Configuration {
         this.traceMode = formData.get("traceMode");
         this.includeExpressionInTitle = true;
         this.xaxisRange = formData.get("xaxisRange") ? formData.get("xaxisRange").split(',').map(Number) : null;
+        this.yaxisRange = formData.get("yaxisRange") ? formData.get("yaxisRange").split(',').map(Number) : null;
+        this.sampleCount = formData.get("sampleCount") ? parseInt(formData.get("sampleCount")) : 100;
         this.optionalDesiredXValues = formData.get("desiredXValues") ? formData.get("desiredXValues").split(',').map(Number) : null;
         this.ast = null;
         try {
