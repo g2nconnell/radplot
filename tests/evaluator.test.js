@@ -135,6 +135,9 @@ describe("Evaluator", () => {
             ["sin", [Math.PI / 2], 1],
             ["cos", [0], 1],
             ["tan", [0], 0],
+            ["csc", [Math.PI / 2], 1],
+            ["sec", [0], 1],
+            ["cot", [Math.PI / 4], 1],
             ["log", [100], 2],
             ["ln", [Math.E], 1]
         ])("evaluates the %s function", (name, values, expected) => {

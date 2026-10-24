@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "math equation polar plotter",
   "type": "module",
-  "main": "index.js",
+  "main": "main.js",
   "scripts": {
     "test": "vitest run",
     "coverage": "vitest run --coverage"

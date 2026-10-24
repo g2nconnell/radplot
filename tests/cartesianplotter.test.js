@@ -26,6 +26,24 @@ describe("cartesianplotter", () => {
         }).xaxis.title).toEqual({ text: "theta" });
     });
 
+    it("formats angular axis ticks in the selected display mode", () => {
+        const radiansLayout = getCartesianPlotLayout({
+            chartType: "cartesian",
+            xValsAreAngles: true,
+            displayMode: "radians",
+            xaxisTickCount: 4
+        });
+        const degreesLayout = getCartesianPlotLayout({
+            chartType: "cartesian",
+            xValsAreAngles: true,
+            displayMode: "degrees",
+            xaxisTickCount: 4
+        });
+
+        expect(radiansLayout.xaxis.tickvals).toEqual(degreesLayout.xaxis.tickvals);
+        expect(radiansLayout.xaxis.ticktext).not.toEqual(degreesLayout.xaxis.ticktext);
+    });
+
     it("builds a scatter trace", () => {
         expect(getTraceData([0, 1], [1, 2], {
             plotName: "Line",
@@ -63,6 +81,37 @@ describe("cartesianplotter", () => {
         });
 
         expect(plotData.yValues).toEqual([-1, null, 1]);
+    });
+
+    it("converts angular sample inputs to radians and omits values outside the y range", () => {
+        const plotData = getCartesianPlotData({
+            calculate: ({ x, theta }) => {
+                expect(x).toBe(theta);
+                return Math.sin(theta);
+            },
+            xaxisRange: [0, 180],
+            yaxisRange: [-0.5, 0.5],
+            sampleCount: 3,
+            xValsAreAngles: true
+        });
+
+        expect(plotData.xValues).toEqual([0, 90, 180]);
+        expect(plotData.yValues[0]).toBe(0);
+        expect(plotData.yValues[1]).toBeNull();
+        expect(plotData.yValues[2]).toBeCloseTo(0);
+    });
+
+    it.each([
+        [[], 3, "xaxisRange must contain an increasing pair of finite numbers"],
+        [[2, 2], 3, "xaxisRange must contain an increasing pair of finite numbers"],
+        [[0, 1], 1, "sampleCount must be an integer greater than 1"],
+        [[0, 1], 2.5, "sampleCount must be an integer greater than 1"]
+    ])("rejects invalid range %j and sample count %s", (xaxisRange, sampleCount, message) => {
+        expect(() => getCartesianPlotData({
+            calculate: ({ x }) => x,
+            xaxisRange,
+            sampleCount
+        })).toThrow(new RangeError(message));
     });
 
     it("renders the trace and layout through Plotly", () => {

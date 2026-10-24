@@ -107,6 +107,43 @@ describe("main UI handlers", () => {
         expect(document.querySelector("#errorTextInput").value).toBe("");
     });
 
+    it("filters the R-value table to requested degree values", () => {
+        const form = buildDom({ functionText: "theta" });
+        vi.spyOn(PolarPlotter, "getPolarPlotData").mockReturnValue({
+            rValues: ["1.0", "2.0", "3.0"],
+            degreeValues: [0, 90, 180],
+            thetaValues: [0, Math.PI / 2, Math.PI],
+            optionalDesiredXValues: [180, 0],
+            plotName: "Polar Plot"
+        });
+
+        generatePlot({ preventDefault: vi.fn(), target: form });
+
+        expect(document.querySelectorAll("#rValueTable tbody tr")).toHaveLength(2);
+        expect(document.querySelector("#rValueTable tbody tr:first-child").textContent).toBe("3.1421803.0");
+        expect(document.querySelector("#rValueTable tbody tr:last-child").textContent).toBe("0.00001.0");
+    });
+
+    it("keeps all polar results when requested degree values are not found", () => {
+        const form = buildDom({ functionText: "theta" });
+        const plotData = {
+            rValues: ["1.0", "2.0"],
+            degreeValues: [0, 90],
+            thetaValues: [0, Math.PI / 2],
+            optionalDesiredXValues: [180],
+            plotName: "Polar Plot"
+        };
+        vi.spyOn(PolarPlotter, "getPolarPlotData").mockReturnValue(plotData);
+
+        generatePlot({ preventDefault: vi.fn(), target: form });
+
+        expect(window.alert).toHaveBeenCalledWith(
+            "None of the desired x-values were found in the calculated x-values. Showing all values."
+        );
+        expect(plotData.degreeValues).toEqual([0, 90]);
+        expect(document.querySelectorAll("#rValueTable tbody tr")).toHaveLength(2);
+    });
+
     it("generates a Cartesian plot and filters the results table to requested x values", () => {
         const form = buildDom({ chartType: "cartesian" });
         const plotData = {
