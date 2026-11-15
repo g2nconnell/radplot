@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1792853906466" clover="3.2.0">
-  <project timestamp="1792853906466" name="All files">
+<coverage generated="1794771702868" clover="3.2.0">
+  <project timestamp="1794771702868" name="All files">
     <metrics statements="465" coveredstatements="464" conditionals="299" coveredconditionals="279" methods="68" coveredmethods="68" elements="832" coveredelements="811" complexity="0" loc="465" ncloc="465" packages="2" files="8" classes="8"/>
     <package name="js">
       <metrics statements="175" coveredstatements="175" conditionals="103" coveredconditionals="92" methods="14" coveredmethods="14"/>
@@ -183,9 +183,9 @@
         <line num="298" count="1" type="stmt"/>
       </file>
     </package>
-    <package name="js.mods">
+    <package name="js.modules">
       <metrics statements="290" coveredstatements="289" conditionals="196" coveredconditionals="187" methods="54" coveredmethods="54"/>
-      <file name="cartesianplotter.js" path="C:\Users\Glenn\coding\radplot\assets\js\mods\cartesianplotter.js">
+      <file name="cartesianplotter.js" path="C:\Users\Glenn\coding\radplot\assets\js\modules\cartesianplotter.js">
         <metrics statements="41" coveredstatements="41" conditionals="74" coveredconditionals="69" methods="4" coveredmethods="4"/>
         <line num="4" count="7" type="stmt"/>
         <line num="24" count="7" type="cond" truecount="4" falsecount="0"/>
@@ -229,7 +229,7 @@
         <line num="118" count="3" type="stmt"/>
         <line num="128" count="3" type="stmt"/>
       </file>
-      <file name="configuration.js" path="C:\Users\Glenn\coding\radplot\assets\js\mods\configuration.js">
+      <file name="configuration.js" path="C:\Users\Glenn\coding\radplot\assets\js\modules\configuration.js">
         <metrics statements="54" coveredstatements="53" conditionals="22" coveredconditionals="19" methods="6" coveredmethods="6"/>
         <line num="7" count="22" type="stmt"/>
         <line num="8" count="22" type="stmt"/>
@@ -286,7 +286,7 @@
         <line num="80" count="3" type="stmt"/>
         <line num="82" count="3" type="stmt"/>
       </file>
-      <file name="evaluator.js" path="C:\Users\Glenn\coding\radplot\assets\js\mods\evaluator.js">
+      <file name="evaluator.js" path="C:\Users\Glenn\coding\radplot\assets\js\modules\evaluator.js">
         <metrics statements="38" coveredstatements="38" conditionals="20" coveredconditionals="20" methods="13" coveredmethods="13"/>
         <line num="1" count="3" type="stmt"/>
         <line num="12" count="1" type="stmt"/>
@@ -327,7 +327,7 @@
         <line num="128" count="19" type="stmt"/>
         <line num="132" count="15" type="stmt"/>
       </file>
-      <file name="lexer.js" path="C:\Users\Glenn\coding\radplot\assets\js\mods\lexer.js">
+      <file name="lexer.js" path="C:\Users\Glenn\coding\radplot\assets\js\modules\lexer.js">
         <metrics statements="43" coveredstatements="43" conditionals="18" coveredconditionals="18" methods="4" coveredmethods="4"/>
         <line num="41" count="51" type="stmt"/>
         <line num="42" count="51" type="stmt"/>
@@ -373,7 +373,7 @@
         <line num="147" count="137" type="stmt"/>
         <line num="150" count="36" type="stmt"/>
       </file>
-      <file name="parser.js" path="C:\Users\Glenn\coding\radplot\assets\js\mods\parser.js">
+      <file name="parser.js" path="C:\Users\Glenn\coding\radplot\assets\js\modules\parser.js">
         <metrics statements="57" coveredstatements="57" conditionals="24" coveredconditionals="24" methods="11" coveredmethods="11"/>
         <line num="25" count="38" type="stmt"/>
         <line num="26" count="38" type="stmt"/>
@@ -433,7 +433,7 @@
         <line num="209" count="1" type="stmt"/>
         <line num="212" count="1" type="stmt"/>
       </file>
-      <file name="plotterConstants.js" path="C:\Users\Glenn\coding\radplot\assets\js\mods\plotterConstants.js">
+      <file name="plotterConstants.js" path="C:\Users\Glenn\coding\radplot\assets\js\modules\plotterConstants.js">
         <metrics statements="26" coveredstatements="26" conditionals="8" coveredconditionals="8" methods="9" coveredmethods="9"/>
         <line num="2" count="876" type="cond" truecount="2" falsecount="0"/>
         <line num="3" count="12" type="stmt"/>
@@ -462,7 +462,7 @@
         <line num="83" count="147" type="stmt"/>
         <line num="85" count="75" type="stmt"/>
       </file>
-      <file name="polarplotter.js" path="C:\Users\Glenn\coding\radplot\assets\js\mods\polarplotter.js">
+      <file name="polarplotter.js" path="C:\Users\Glenn\coding\radplot\assets\js\modules\polarplotter.js">
         <metrics statements="31" coveredstatements="31" conditionals="30" coveredconditionals="29" methods="7" coveredmethods="7"/>
         <line num="4" count="9" type="stmt"/>
         <line num="5" count="9" type="stmt"/>

@@ -4,7 +4,7 @@ import {
     getCartesianPlotLayout,
     getTraceData,
     renderCartesianPlot
-} from "../assets/js/mods/cartesianplotter.js";
+} from "/assets/js/modules/cartesianplotter.js";
 
 describe("cartesianplotter", () => {
     it("builds a cartesian layout with optional axis ranges", () => {

@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import * as PolarPlotter from "../assets/js/mods/polarplotter.js";
-import * as CartesianPlotter from "../assets/js/mods/cartesianplotter.js";
+import * as PolarPlotter from "/assets/js/modules/polarplotter.js";
+import * as CartesianPlotter from "/assets/js/modules/cartesianplotter.js";
 
 const plotlyMock = { newPlot: vi.fn() };
 vi.stubGlobal("Plotly", plotlyMock);
@@ -14,7 +14,7 @@ const {
     onChartTypeChange,
     onXaxisValuesAreAnglesCheckboxChange,
     resetPlotAndInputs
-} = await import("../assets/js/main.js");
+} = await import("../../assets/js/main.js");
 
 function buildDom(overrides = {}) {
     const formValues = {

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import Lexer from "../assets/js/mods/lexer.js";
-import Parser from "../assets/js/mods/parser.js";
+import Lexer from "/assets/js/modules/lexer.js";
+import Parser from "/assets/js/modules/parser.js";
 
 function tokensFor(input) {
     return new Lexer(input).tokenize();

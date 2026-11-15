@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import Configuration from "../assets/js/mods/configuration.js";
+import Configuration from "/assets/js/modules/configuration.js";
 
 function formData(values = {}) {
     return {

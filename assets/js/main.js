@@ -1,7 +1,7 @@
 import "https://cdn.plot.ly/plotly-4.1.0.min.js";
-import Configuration from "./mods/configuration.js";
-import * as PolarPlotter from "./mods/polarplotter.js";
-import * as CartesianPlotter from "./mods/cartesianplotter.js";
+import Configuration from "./modules/configuration.js";
+import * as PolarPlotter from "./modules/polarplotter.js";
+import * as CartesianPlotter from "./modules/cartesianplotter.js";
 
 export function generatePlot(event) {
     event.preventDefault();
