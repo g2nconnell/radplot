@@ -5,6 +5,54 @@ html body {
     padding: 10px;
 }
 
+:root {
+  --header-bg: #1a1a2e;
+  --accent-color: #5090f7;
+  --text-color: #ffffff;
+  --header-height: 70px;
+}
+
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: var(--header-height);
+  padding: 0 2rem;
+  background-color: var(--header-bg);
+  color: var(--text-color);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  border-bottom: 3px solid var(--accent-color);
+  margin-bottom: 50px;
+}
+
+.app-logo {
+  font-size: 1.5rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  cursor: pointer;
+  color: var(--accent-color);
+  text-shadow: 2px 2px 0px #000;
+}
+
+button.help-button {
+  background-color: var(--accent-color);
+  color: var(--text-color);
+  border: none;
+  border-radius: 5px;
+  padding: 0.5rem 1rem;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+[popover] {
+    padding: 20px;
+}
+
 div.inputContainer {
     padding: 10px;
     margin-bottom: 10px;

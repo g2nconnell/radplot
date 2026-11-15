@@ -11,3 +11,13 @@ This app uses plotly.js as the plotting engine.  Refer to https://github.com/plo
 
 The parser currently supports sin, cos, tan, min, max, pow, sqrt and all the basic arithmetic operators and is a good example of such parsers in JavaScript.
 
+## Screenshots
+### Plot Inputs
+![Screenshot of plot inputs](./assets/images/screenshot-of-plotinputs.gif)
+
+### Polar Plot
+![Screenshot of Polar Plot](./assets/images/screenshot-of-polarplot.gif)
+
+### Cartesian Plot
+![Screenshot of Cartesian Plot](./assets/images/screenshot-of-cartesianplot.gif)
+

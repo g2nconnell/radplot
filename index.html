@@ -7,7 +7,18 @@
         <script type="module" src="assets/js/main.js"></script>
     </head>
     <body>
-        <h1>Math Plotter</h1>
+        <header class="app-header">
+            <h1 class="app-logo">Math Plotter</h1>
+            <button type="button" class="help-button" popovertarget="helpPopover" aria-label="Help">Help</button>
+            <div id="helpPopover" popover>
+                <p>Plot mathematical equations using polar or Cartesian coordinates.</p>
+                <p>Enter your equation and configure the plot settings as needed.</p>
+                <p>Click the "Plot" button to generate the graph based on your inputs.</p>
+                <p>You can adjust the plot settings and replot to explore different visualizations.</p>
+                <p>Good luck and have fun plotting equations!</p>
+            </div>
+        </header>
+        <p>Plot mathematical equations using polar or Cartesian coordinates.</p>
         <!-- Configuration inputs for generating the plot -->
         <form id="plotConfigForm">
             <div class="inputsGroupContainer outerContainer">
