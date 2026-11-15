@@ -38,6 +38,30 @@ describe("Lexer", () => {
             ]);
         });
 
+        it.each([
+            ["2(x + 5)", ["NUMBER", "MULTIPLY", "LPAREN"]],
+            ["2theta", ["NUMBER", "MULTIPLY", "IDENTIFIER"]],
+            ["sin(2theta)", ["IDENTIFIER", "LPAREN", "NUMBER", "MULTIPLY", "IDENTIFIER", "RPAREN"]],
+            ["2sin(theta)", ["NUMBER", "MULTIPLY", "IDENTIFIER", "LPAREN", "IDENTIFIER", "RPAREN"]],
+            ["(x + 1)(x - 1)", ["LPAREN", "IDENTIFIER", "PLUS", "NUMBER", "RPAREN", "MULTIPLY", "LPAREN"]]
+        ])("inserts multiplication into %s", (input, expectedTypes) => {
+            const tokens = new Lexer(input).tokenize();
+
+            expect(tokens.map(token => token.type).slice(0, expectedTypes.length)).toEqual(expectedTypes);
+        });
+
+        it("preserves function-call tokens and does not multiply adjacent numbers", () => {
+            expect(new Lexer("sin(x)").tokenize().map(token => token.type)).toEqual([
+                "IDENTIFIER", "LPAREN", "IDENTIFIER", "RPAREN", "EOF"
+            ]);
+            expect(new Lexer("x(y)").tokenize().map(token => token.type)).toEqual([
+                "IDENTIFIER", "MULTIPLY", "LPAREN", "IDENTIFIER", "RPAREN", "EOF"
+            ]);
+            expect(new Lexer("1 2").tokenize().map(token => token.type)).toEqual([
+                "NUMBER", "NUMBER", "EOF"
+            ]);
+        });
+
         it("ignores whitespace and tokenizes an empty input as EOF", () => {
             expect(new Lexer("  \t\n").tokenize()).toEqual([
                 { type: "EOF", value: null }

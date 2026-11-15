@@ -1,3 +1,5 @@
+import { isFunctionName } from "./evaluator.js";
+
 /*
 The lexer converts characters into tokens.
 
@@ -29,7 +31,7 @@ power       → unary ("^" power)?
 unary       → ("+" | "-") unary | primary
 primary   → NUMBER
           | IDENTIFIER
-          | IDENTIFIER "(" arguments ")"
+          | FUNCTION_NAME "(" arguments ")"
           | "(" expression ")"
 
 arguments → expression ("," expression)*
@@ -106,7 +108,33 @@ export default class Lexer {
             value: null
         });
 
-        return tokens;
+        return this.insertImplicitMultiplication(tokens);
+    }
+
+    insertImplicitMultiplication(tokens) {
+        const normalizedTokens = [];
+        for (let index = 0; index < tokens.length - 1; index++) {
+            const current = tokens[index];
+            const next = tokens[index + 1];
+            normalizedTokens.push(current);
+
+            if (this.needsImplicitMultiplication(current, next)) {
+                normalizedTokens.push({ type: "MULTIPLY", value: "*" });
+            }
+        }
+        normalizedTokens.push(tokens[tokens.length - 1]);
+        return normalizedTokens;
+    }
+
+    needsImplicitMultiplication(current, next) {
+        const canEndValue = ["NUMBER", "IDENTIFIER", "RPAREN"].includes(current.type);
+        const canStartValue = ["NUMBER", "IDENTIFIER", "LPAREN"].includes(next.type);
+        const adjacentNumbers = current.type === "NUMBER" && next.type === "NUMBER";
+        const functionCall = current.type === "IDENTIFIER" &&
+            next.type === "LPAREN" &&
+            isFunctionName(current.value);
+
+        return canEndValue && canStartValue && !adjacentNumbers && !functionCall;
     }
 
     readNumber() {

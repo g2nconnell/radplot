@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import Lexer from "/assets/js/modules/lexer.js";
 import Parser from "/assets/js/modules/parser.js";
+import Evaluator from "/assets/js/modules/evaluator.js";
 
 function tokensFor(input) {
     return new Lexer(input).tokenize();
@@ -97,6 +98,18 @@ describe("Parser", () => {
                 "Expected EOF, but found NUMBER"
             );
         });
+
+        it.each([
+            ["2(x + 5)", { x: 3 }, 16],
+            ["sin(2theta)", { theta: Math.PI / 4 }, 1],
+            ["2sin(theta)", { theta: Math.PI / 2 }, 2],
+            ["x(y)", { x: 2, y: 3 }, 6],
+            ["(x + 1)(x - 1)", { x: 3 }, 8]
+        ])("evaluates implicit multiplication in %s", (input, variables, expected) => {
+            const ast = new Parser(tokensFor(input)).parse();
+
+            expect(new Evaluator(variables).evaluate(ast)).toBeCloseTo(expected);
+        });
     });
 
     describe("expression", () => {
@@ -185,9 +198,9 @@ describe("Parser", () => {
         });
 
         it("parses function calls with multiple arguments", () => {
-            expect(new Parser(tokensFor("point(1, x + 2)")).primary()).toEqual({
+            expect(new Parser(tokensFor("max(1, x + 2)")).primary()).toEqual({
                 type: "CallExpression",
-                name: "point",
+                name: "max",
                 arguments: [
                     { type: "NumberLiteral", value: 1 },
                     {
@@ -201,9 +214,9 @@ describe("Parser", () => {
         });
 
         it("parses function calls with no arguments", () => {
-            expect(new Parser(tokensFor("random()")).primary()).toEqual({
+            expect(new Parser(tokensFor("sin()")).primary()).toEqual({
                 type: "CallExpression",
-                name: "random",
+                name: "sin",
                 arguments: []
             });
         });

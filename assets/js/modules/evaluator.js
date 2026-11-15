@@ -30,6 +30,10 @@ const functions = {
     ln: Math.log
 };
 
+export function isFunctionName(name) {
+    return Object.prototype.hasOwnProperty.call(functions, name);
+}
+
 /**
  * Evaluates mathematical expressions represented by an abstract syntax tree.
  */
