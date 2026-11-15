@@ -36,6 +36,14 @@ arguments → expression ("," expression)*
 
 */
 
+
+/**
+ * Converts mathematical expressions into tokens.
+ */
+/**
+ * Constructs a lexer for the given input.
+ * @param {string} input - Mathematical expression to tokenize.
+ */
 export default class Lexer {
     constructor(input) {
         this.input = input;

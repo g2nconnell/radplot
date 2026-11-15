@@ -2,3 +2,4 @@ node_modules/
 .vitest/*
 docs/**
 coverage/**
+package-lock.json

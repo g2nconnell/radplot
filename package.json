@@ -1,20 +1,21 @@
 {
   "name": "radplot",
   "version": "1.0.0",
-  "description": "math equation polar plotter",
+  "description": "Math equation plotter. Plots multiple equations using either polar or Cartesian coordinates.",
   "type": "module",
   "main": "main.js",
   "scripts": {
     "test": "vitest run",
-    "coverage": "vitest run --coverage"
+    "coverage": "vitest run --coverage",
+    "docs": "jsdoc -c jsdoc.json -r -d docs assets"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/g2nconnell/radplot.git"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "keywords": ["math", "equation", "plotter", "polar", "cartesian"],
+  "author": "Glenn Connell",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/g2nconnell/radplot/issues"
   },
@@ -22,6 +23,7 @@
   "devDependencies": {
     "@vitest/coverage-v8": "^5.0.1",
     "jsdom": "^30.1.1",
+    "jsdoc": "^4.0.5",
     "vitest": "^5.0.1"
   }
 }

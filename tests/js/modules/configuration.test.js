@@ -51,6 +51,32 @@ describe("Configuration", () => {
                 "Unexpected character '@' at position 6"
             ));
         });
+
+        it("parses multiple expressions separated by blank lines", () => {
+            const config = new Configuration(formData({
+                functionText: "theta\r\n\r\n2 * theta"
+            }));
+
+            expect(config.expressions.map(({ expression }) => expression)).toEqual([
+                "theta",
+                "2 * theta"
+            ]);
+            expect(config.getExpressionConfig(config.expressions[1]).calculate({ theta: 3 })).toBe(6);
+        });
+
+        it("identifies which expression contains a syntax error", () => {
+            expect(() => new Configuration(formData({
+                functionText: "theta\n\n2 @ theta"
+            }))).toThrowError(new SyntaxError(
+                "Expression 2: Unexpected character '@' at position 2"
+            ));
+        });
+
+        it("rejects input containing no expressions", () => {
+            expect(() => new Configuration(formData({
+                functionText: " \n\n "
+            }))).toThrowError(new SyntaxError("Enter at least one expression."));
+        });
     });
 
     describe("calculate", () => {

@@ -21,24 +21,50 @@ export default class Configuration {
         this.sampleCount = formData.get("sampleCount") ? parseInt(formData.get("sampleCount")) : 100;
         this.optionalDesiredXValues = formData.get("desiredXValues") ? formData.get("desiredXValues").split(',').map(Number) : null;
         this.ast = null;
-        try {
-            const expression = formData.get("functionText");
-            const lexer = new Lexer(expression);
-            const tokens = lexer.tokenize();
-            const parser = new Parser(tokens);
-            const ast = parser.parse();
-            this.ast = ast;
-            const thetaFn = function(x) { return this.calculate({theta: x, x: x}); }.bind(this);
-            this.thetafn = thetaFn;
-            this.currentExpression =  expression;
-        } catch (error) {
-            throw new SyntaxError(error.message);
+        const expressionText = formData.get("functionText") ?? "";
+        const expressionTexts = expressionText
+            .split(/\r?\n\s*\r?\n/)
+            .map(expression => expression.trim())
+            .filter(Boolean);
+        if (expressionTexts.length === 0) {
+            throw new SyntaxError("Enter at least one expression.");
         }
+
+        this.expressions = expressionTexts.map((expression, index) => {
+            try {
+                const lexer = new Lexer(expression);
+                const tokens = lexer.tokenize();
+                const parser = new Parser(tokens);
+                return { expression, ast: parser.parse() };
+            } catch (error) {
+                const message = expressionTexts.length > 1
+                    ? `Expression ${index + 1}: ${error.message}`
+                    : error.message;
+                throw new SyntaxError(message);
+            }
+        });
+        this.currentExpression = this.expressions[0].expression;
+        this.ast = this.expressions[0].ast;
+        this.thetafn = x => this.calculate({ theta: x, x });
     }
 
-    calculate(variables = {}) {
+    getExpressionConfig(expression) {
+        const plotName = this.plotName.trim();
+        return {
+            ...this,
+            currentExpression: expression.expression,
+            ast: expression.ast,
+            plotName: plotName && this.expressions.length > 1
+                ? `${plotName} (${expression.expression})`
+                : this.plotName,
+            calculate: variables => this.calculate(variables, expression.ast),
+            thetafn: x => this.calculate({ theta: x, x }, expression.ast),
+            getRvalueFn: () => this.getRvalueFn(expression.ast)
+        };
+    }
+
+    calculate(variables = {}, ast = this.ast) {
         let retVal;
-        const ast = this.ast;
         if (ast) {
             const evaluator = new Evaluator(variables);
             retVal = evaluator.evaluate(ast);
@@ -65,12 +91,12 @@ export default class Configuration {
         return thetas;
     }
 
-    getRvalueFn() {
+    getRvalueFn(ast = this.ast) {
         const rValueFunction = (theta, config = {} ) => {
             const retValueArray = [];
             const isPolar = config.chartType === 'polar';
-            let rValue = this.thetafn(theta);
-            if (rValue != NaN && !isPolar || rValue >= 0 && (this.ignoreRvalueBeyond === 0 || (this.ignoreRvalueBeyond > 0 && rValue <= this.ignoreRvalueBeyond))) {
+            const rValue = this.calculate({ theta, x: theta }, ast);
+            if (Number.isFinite(rValue) && (!isPolar || rValue >= 0 && (this.ignoreRvalueBeyond === 0 || (this.ignoreRvalueBeyond > 0 && rValue <= this.ignoreRvalueBeyond)))) {
                 // if equation uses a square root, return both the positive and negative values of r. Otherwise, return only the positive value of r.
                 retValueArray.push(rValue.toFixed(1));
                 retValueArray.push((-1 * rValue).toFixed(1));

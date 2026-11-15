@@ -1,3 +1,9 @@
+
+/**
+ * Formats a radian tick label from a degree value.
+ * @param {number} degrees - Angle in degrees.
+ * @returns {string} Formatted radian tick label.
+ */
 function formatRadianTickLabel(degrees) {
     if (degrees === 0) {
         return "0";
@@ -20,7 +26,12 @@ function formatRadianTickLabel(degrees) {
         : `${sign}${coefficient}π/${denominator}`;
 }
 
+/**
+ * Provides constants used by the plotting modules.
+ */
 export class PlotterConstants {
+    static TraceColors = ["peru", "teal", "mediumpurple", "darkorange", "seagreen", "steelblue"];
+
     static DefaultDegreeValuesToTest = [
         0, 1, 2,3, 4, 5, 6, 7, 8, 9, 
         10, 11, 12, 13, 14, 15, 16, 17, 18, 19,  

@@ -5,6 +5,8 @@ Both charts generate a table of the inputs and corresponding outputs.
 For Polar charts, the input is an angular measure and the output is an r-value.
 For Cartesian charts, the input is either numeric or angular.
 
+More than one equation can be displayed at the same time.  Equations are delimited by a blank line.
+
 This app uses plotly.js as the plotting engine.  Refer to https://github.com/plotly/plotly.js/?tab=MIT-1-ov-file
 
 The parser currently supports sin, cos, tan, min, max, pow, sqrt and all the basic arithmetic operators and is a good example of such parsers in JavaScript.

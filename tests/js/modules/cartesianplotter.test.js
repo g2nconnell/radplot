@@ -136,4 +136,21 @@ describe("cartesianplotter", () => {
             })
         );
     });
+
+    it("renders multiple expressions as separate traces in one plot", () => {
+        const newPlot = vi.fn();
+        globalThis.Plotly = { newPlot };
+
+        renderCartesianPlot({
+            traces: [
+                { xValues: [0, 1], yValues: [0, 1], plotName: "y = x", traceMode: "lines" },
+                { xValues: [0, 1], yValues: [0, 2], plotName: "y = 2x", traceMode: "lines" }
+            ]
+        });
+
+        const traces = newPlot.mock.calls[0][1];
+        expect(traces).toHaveLength(2);
+        expect(traces.map(trace => trace.name)).toEqual(["y = x", "y = 2x"]);
+        expect(traces[0].line.color).not.toBe(traces[1].line.color);
+    });
 });

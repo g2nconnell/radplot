@@ -9,7 +9,15 @@ export function generatePlot(event) {
     try {
         const config = new Configuration(formData);
         const isPolar = config.chartType === 'polar';
-        const plotData = isPolar ? PolarPlotter.getPolarPlotData(config) : CartesianPlotter.getCartesianPlotData(config);
+        const expressionPlotData = config.expressions.map(expression => {
+            const expressionConfig = config.getExpressionConfig(expression);
+            return isPolar
+                ? PolarPlotter.getPolarPlotData(expressionConfig)
+                : CartesianPlotter.getCartesianPlotData(expressionConfig);
+        });
+        const plotData = expressionPlotData.length > 1
+            ? { ...expressionPlotData[0], traces: expressionPlotData }
+            : expressionPlotData[0];
         if (isPolar) {
             PolarPlotter.renderPolarPlot(plotData);
         } else {
@@ -31,14 +39,15 @@ export function generatePlot(event) {
     }
 }
 
-function createRValueTable(plotData) {
+function createRValueTable(plotData, includeExpression) {
     const tableContainer = document.querySelector('div.valuesTableContainer');
     if (tableContainer) {
         tableContainer.innerHTML = `
-            <table id="rValueTable"n>
+            <table id="rValueTable">
                 <caption>${plotData.plotName}</caption>
                 <thead>
                     <tr>
+                        ${includeExpression ? "<th>Expression</th>" : ""}
                         <th>theta: radians</th>
                         <th>theta: degrees</th>
                         <th>r-value</th>
@@ -50,14 +59,15 @@ function createRValueTable(plotData) {
     }
 }
 
-function createXYValueTable(plotData) {
+function createXYValueTable(plotData, includeExpression) {
     const tableContainer = document.querySelector('div.valuesTableContainer');
     if (tableContainer) {
         tableContainer.innerHTML = `
-            <table id="xyValueTable"n>
+            <table id="xyValueTable">
                 <caption>${plotData.plotName}</caption>
                 <thead>
                     <tr>
+                        ${includeExpression ? "<th>Expression</th>" : ""}
                         <th>X-Value</th>
                         <th>Y-Value</th>
                     </tr>
@@ -69,34 +79,53 @@ function createXYValueTable(plotData) {
 }
 
 function updateRvalueTable(plotData) {
-    createRValueTable(plotData);
+    const expressionData = plotData.traces ?? [plotData];
+    const includeExpression = expressionData.length > 1;
+    createRValueTable(plotData, includeExpression);
     const table = document.querySelector('table#rValueTable');
-    appendRTableRows(table, plotData);
+    appendRTableRows(table, expressionData, includeExpression);
 }
 
 function updateXYvalueTable(plotData) {
-    createXYValueTable(plotData);
+    const expressionData = plotData.traces ?? [plotData];
+    const includeExpression = expressionData.length > 1;
+    createXYValueTable(plotData, includeExpression);
     const table = document.querySelector('table#xyValueTable');
-    appendXYTableRows(table, plotData);
+    appendXYTableRows(table, expressionData, includeExpression);
 }
 
-function appendRTableRows(table, plotData) {
-    if (table && plotData && plotData.rValues && plotData.degreeValues && plotData.thetaValues) {
-        filterDesiredDegreeValues(plotData);
-        const len = plotData.rValues.length;
-        for (let index = 0; index < len; index++) {
-            const row = document.createElement('tr');
-            const degreeTd = document.createElement('td');
-            const radianTd = document.createElement('td');
-            const rValueTd = document.createElement('td');
-            degreeTd.textContent = plotData.degreeValues[index].toFixed(0);
-            radianTd.textContent = plotData.thetaValues[index].toFixed(3);
-            rValueTd.textContent = plotData.rValues[index];
-            row.appendChild(radianTd);
-            row.appendChild(degreeTd);
-            row.appendChild(rValueTd);
-            table.tBodies[0].appendChild(row);
+function appendRTableRows(table, expressionData, includeExpression) {
+    let hasDesiredValues = false;
+    let missingDesiredValue = false;
+    for (const plotData of expressionData) {
+        if (table && plotData && plotData.rValues && plotData.degreeValues && plotData.thetaValues) {
+            hasDesiredValues = hasDesiredValues || Boolean(plotData.optionalDesiredXValues?.length);
+            if (!filterDesiredDegreeValues(plotData) && plotData.optionalDesiredXValues?.length) {
+                missingDesiredValue = true;
+            }
+            const len = plotData.rValues.length;
+            for (let index = 0; index < len; index++) {
+                const row = document.createElement('tr');
+                if (includeExpression) {
+                    const expressionTd = document.createElement('td');
+                    expressionTd.textContent = plotData.plotName;
+                    row.appendChild(expressionTd);
+                }
+                const degreeTd = document.createElement('td');
+                const radianTd = document.createElement('td');
+                const rValueTd = document.createElement('td');
+                degreeTd.textContent = plotData.degreeValues[index].toFixed(0);
+                radianTd.textContent = plotData.thetaValues[index].toFixed(3);
+                rValueTd.textContent = plotData.rValues[index];
+                row.appendChild(radianTd);
+                row.appendChild(degreeTd);
+                row.appendChild(rValueTd);
+                table.tBodies[0].appendChild(row);
+            }
         }
+    }
+    if (hasDesiredValues && missingDesiredValue) {
+        alert("None of the desired x-values were found in the calculated x-values. Showing all values.");
     }
 }
 
@@ -114,14 +143,15 @@ function filterDesiredDegreeValues(plotData) {
                 filteredThetaValues.push(plotData.thetaValues[index]);
             }
         }
-        if (filteredDegreeValues.length === 0) {
-            alert("None of the desired x-values were found in the calculated x-values. Showing all values.");
-        } else {
+        if (filteredDegreeValues.length > 0) {
             plotData.degreeValues = filteredDegreeValues;
             plotData.rValues = filteredRValues;
             plotData.thetaValues = filteredThetaValues;
+            return true;
         }
+        return false;
     }
+    return true;
 }
 
 function filterDesiredXValues(plotData) {
@@ -137,33 +167,49 @@ function filterDesiredXValues(plotData) {
                 filteredYValues.push(plotData.yValues[index]);
             }
         }
-        if (filteredXValues.length === 0) {
-            alert("None of the desired x-values were found in the calculated x-values. Showing all values.");
-        } else {
+        if (filteredXValues.length > 0) {
             plotData.xValues = filteredXValues;
             plotData.yValues = filteredYValues;
+            return true;
         }
+        return false;
     }
+    return true;
 }
 
-function appendXYTableRows(table, plotData) {
-    if (table && plotData && plotData.xValues && plotData.yValues) {
-        filterDesiredXValues(plotData);
-        const len = plotData.xValues.length;
-        for (let index = 0; index < len; index++) {
-            const row = document.createElement('tr');
-            const xValueTd = document.createElement('td');
-            const yValueTd = document.createElement('td');
-            let xValue = plotData.xValues[index];
-            if (plotData.xValsAreAngles && plotData.displayMode === "radians") {
-                xValue = (xValue * Math.PI / 180).toFixed(4); // Convert degrees to radians for display
+function appendXYTableRows(table, expressionData, includeExpression) {
+    let hasDesiredValues = false;
+    let missingDesiredValue = false;
+    for (const plotData of expressionData) {
+        if (table && plotData && plotData.xValues && plotData.yValues) {
+            hasDesiredValues = hasDesiredValues || Boolean(plotData.optionalDesiredXValues?.length);
+            if (!filterDesiredXValues(plotData) && plotData.optionalDesiredXValues?.length) {
+                missingDesiredValue = true;
             }
-            xValueTd.textContent = xValue;
-            yValueTd.textContent = plotData.yValues[index] !== null ? plotData.yValues[index].toFixed(3) : "undefined";
-            row.appendChild(xValueTd);
-            row.appendChild(yValueTd);
-            table.tBodies[0].appendChild(row);
+            const len = plotData.xValues.length;
+            for (let index = 0; index < len; index++) {
+                const row = document.createElement('tr');
+                if (includeExpression) {
+                    const expressionTd = document.createElement('td');
+                    expressionTd.textContent = plotData.plotName;
+                    row.appendChild(expressionTd);
+                }
+                const xValueTd = document.createElement('td');
+                const yValueTd = document.createElement('td');
+                let xValue = plotData.xValues[index];
+                if (plotData.xValsAreAngles && plotData.displayMode === "radians") {
+                    xValue = (xValue * Math.PI / 180).toFixed(4); // Convert degrees to radians for display
+                }
+                xValueTd.textContent = xValue;
+                yValueTd.textContent = plotData.yValues[index] !== null ? plotData.yValues[index].toFixed(3) : "undefined";
+                row.appendChild(xValueTd);
+                row.appendChild(yValueTd);
+                table.tBodies[0].appendChild(row);
+            }
         }
+    }
+    if (hasDesiredValues && missingDesiredValue) {
+        alert("None of the desired x-values were found in the calculated x-values. Showing all values.");
     }
 }
 

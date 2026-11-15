@@ -1,5 +1,10 @@
 import { PlotterConstants } from "./plotterConstants.js";
 
+/**
+ * Returns the layout configuration for a Cartesian plot.
+ * @param {Object} layoutConfig - Layout configuration options.
+ * @returns {Object} Plotly layout configuration.
+ */
 export function getCartesianPlotLayout(layoutConfig = {}) {
     const layout = {
         title: {
@@ -35,6 +40,13 @@ export function getCartesianPlotLayout(layoutConfig = {}) {
     return layout;
 }
 
+/**
+ * Returns the trace data for a Cartesian plot.
+ * @param {Array<number>} xValues - X-axis values.
+ * @param {Array<number>} yValues - Y-axis values.
+ * @param {Object} traceConfig - Trace configuration options.
+ * @returns {Object} Plotly trace data.
+ */
 export function getTraceData(xValues, yValues, traceConfig = {}) {
     return {
         x: xValues,
@@ -54,6 +66,11 @@ export function getTraceData(xValues, yValues, traceConfig = {}) {
     };
 }
 
+/**
+ * Returns the data for a Cartesian plot.
+ * @param {Object} config - Plot configuration options.
+ * @returns {Object} Cartesian plot data.
+ */
 export function getCartesianPlotData(config = {}) {
     const xaxisRange = config.xaxisRange ?? [-10, 10];
     const yaxisRange = config.yaxisRange ?? null;
@@ -109,12 +126,21 @@ export function getCartesianPlotData(config = {}) {
     };
 }
 
+/**
+ * Renders a Cartesian plot.
+ * @param {Object} plotData - Cartesian plot data.
+ */
 export function renderCartesianPlot(plotData = {}) {
-    const trace = getTraceData(plotData.xValues, plotData.yValues, {
-        plotName: plotData.plotName,
-        mode: plotData.traceMode,
-        color: "peru"
-    });
+    const expressionData = plotData.traces ?? [plotData];
+    const traces = expressionData.map((expression, index) => getTraceData(
+        expression.xValues,
+        expression.yValues,
+        {
+            plotName: expression.plotName,
+            mode: expression.traceMode,
+            color: PlotterConstants.TraceColors[index % PlotterConstants.TraceColors.length]
+        }
+    ));
     const layout = getCartesianPlotLayout({
         title: plotData.layoutTitle,
         xaxisRange: plotData.xaxisRange,
@@ -125,5 +151,5 @@ export function renderCartesianPlot(plotData = {}) {
         xValsAreAngles: plotData.xValsAreAngles
     });
 
-    Plotly.newPlot("cartesianPlot", [trace], layout);
+    Plotly.newPlot("cartesianPlot", traces, layout);
 }

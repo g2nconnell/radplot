@@ -1,3 +1,7 @@
+
+/**
+ * Provides mathematical functions available to the evaluator.
+ */
 const functions = {
     sqrt: Math.sqrt,
 
@@ -26,6 +30,13 @@ const functions = {
     ln: Math.log
 };
 
+/**
+ * Evaluates mathematical expressions represented by an abstract syntax tree.
+ */
+/**
+ * Constructs an evaluator with optional variables.
+ * @param {Object} variables - Additional variables available to the evaluator.
+ */
 export default class Evaluator {
     constructor(variables = {}) {
         this.variables = {

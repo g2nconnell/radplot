@@ -1,5 +1,11 @@
 import { PlotterConstants } from "./plotterConstants.js";
 
+
+/**
+ * Returns the layout configuration for a polar plot.
+ * @param {Object} layoutConfig - Layout configuration options.
+ * @returns {Object} Plotly layout configuration.
+ */
 export function getPolarPlotLayout(layoutConfig = {title: "Polar Plot", displayMode: "radians", xaxisTickCount: 24, xaxisRange: [0, 10]}) {
     const tickLabelData = getAxisTickLabels(layoutConfig.xaxisTickCount);
     const tickValues = tickLabelData.tickValues;
@@ -31,6 +37,11 @@ export function getPolarPlotLayout(layoutConfig = {title: "Polar Plot", displayM
     };
 }
 
+/**
+ * Returns the axis tick labels for a polar plot.
+ * @param {number} sliceCount - Number of axis slices.
+ * @returns {Object} Axis tick labels.
+ */
 export function getAxisTickLabels(sliceCount = 24) {
 
     const axisTickData = {
@@ -63,8 +74,16 @@ export function getAxisTickLabels(sliceCount = 24) {
     };
 }
 
+/**
+ * Returns the trace data for a polar plot.
+ * @param {Array<number>} rValues - Radial values.
+ * @param {Array<number>} thetaValues - Theta values in radians.
+ * @param {Array<number>} degreeValues - Theta values in degrees.
+ * @param {Object} traceConfig - Trace configuration options.
+ * @returns {Object} Plotly trace data.
+ */
 export function getTraceData(rValues, thetaValues, degreeValues, traceConfig = {displayMode: "radians", plotName: "Polar Plot", mode: "lines", color: "peru"}) {
-    return {
+    const trace = {
         r: rValues,
         theta: traceConfig.displayMode === 'radians' ? thetaValues : degreeValues,
         thetaunit: traceConfig.displayMode, // comment out for degrees
@@ -81,25 +100,47 @@ export function getTraceData(rValues, thetaValues, degreeValues, traceConfig = {
         },
         type: 'scatterpolar'
     };
+    if (traceConfig.dash) {
+        trace.line.dash = traceConfig.dash;
+    }
+    return trace;
 }
 
+/**
+ * Renders a polar plot.
+ * @param {Object} plotData - Polar plot data.
+ */
 export function renderPolarPlot(plotData = {}) {
-    const traceConfig1  = {
-        displayMode: plotData.displayMode, 
-        plotName: plotData.plotName, 
-        mode: plotData.traceMode,
-        color: "peru"
-    };
-    const trace1 = getTraceData(plotData.rValues, plotData.thetaValues, plotData.degreeValues, traceConfig1);
-    const traceConfig2  = {
-        displayMode: plotData.displayMode, 
-        plotName: plotData.plotName + " (Negative r)             ", 
-        mode: plotData.traceMode,
-        color: "lightcoral"
-    };
-    const trace2 = plotData.minusRValues ? getTraceData(plotData.minusRValues, plotData.thetaValues, plotData.degreeValues, traceConfig2) : null;
-
-    const data = [trace1, trace2].filter(trace => trace !== null); // Filter out null traces
+    const expressionData = plotData.traces ?? [plotData];
+    const data = expressionData.flatMap((expression, index) => {
+        const color = PlotterConstants.TraceColors[index % PlotterConstants.TraceColors.length];
+        const traceConfig = {
+            displayMode: expression.displayMode,
+            plotName: expression.plotName,
+            mode: expression.traceMode,
+            color
+        };
+        const traces = [
+            getTraceData(expression.rValues, expression.thetaValues, expression.degreeValues, traceConfig)
+        ];
+        if (expression.minusRValues) {
+            const isMultiple = expressionData.length > 1;
+            traces.push(getTraceData(
+                expression.minusRValues,
+                expression.thetaValues,
+                expression.degreeValues,
+                {
+                    ...traceConfig,
+                    plotName: isMultiple
+                        ? `${expression.plotName} (Negative r)`
+                        : `${expression.plotName} (Negative r)             `,
+                    color: isMultiple ? color : "lightcoral",
+                    dash: isMultiple ? "dot" : undefined
+                }
+            ));
+        }
+        return traces;
+    });
 
     const layoutConfig = {
         title: plotData.layoutTitle,
@@ -114,6 +155,11 @@ export function renderPolarPlot(plotData = {}) {
     Plotly.newPlot("polarPlot", data, layout);
 }
 
+/**
+ * Returns the data for a polar plot.
+ * @param {Object} config - Plot configuration options.
+ * @returns {Object} Polar plot data.
+ */
 export function getPolarPlotData(config) {
     const rValues = [];
     const minusRValues = [];

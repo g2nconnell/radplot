@@ -153,6 +153,45 @@ describe("polarplotter", () => {
             expect(traces[1].name).toBe("Radius (Negative r)             ");
             expect(traces[1].line.color).toBe("lightcoral");
         });
+
+        it("renders multiple expressions together and distinguishes negative-radius traces", () => {
+            const newPlot = vi.fn();
+            globalThis.Plotly = { newPlot };
+
+            renderPolarPlot({
+                traces: [
+                    {
+                        rValues: ["1.0"],
+                        minusRValues: ["-1.0"],
+                        thetaValues: [0],
+                        degreeValues: [0],
+                        displayMode: "radians",
+                        plotName: "r = 1",
+                        traceMode: "lines"
+                    },
+                    {
+                        rValues: ["2.0"],
+                        minusRValues: null,
+                        thetaValues: [0],
+                        degreeValues: [0],
+                        displayMode: "radians",
+                        plotName: "r = 2",
+                        traceMode: "lines"
+                    }
+                ]
+            });
+
+            const traces = newPlot.mock.calls[0][1];
+            expect(traces).toHaveLength(3);
+            expect(traces.map(trace => trace.name)).toEqual([
+                "r = 1",
+                "r = 1 (Negative r)",
+                "r = 2"
+            ]);
+            expect(traces[0].line.color).toBe(traces[1].line.color);
+            expect(traces[1].line.dash).toBe("dot");
+            expect(traces[0].line.color).not.toBe(traces[2].line.color);
+        });
     });
 
     describe("getPolarPlotData", () => {

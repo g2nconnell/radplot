@@ -20,6 +20,14 @@
         Identifier
 */
 
+
+/**
+ * Constructs an abstract syntax tree from tokens.
+ */
+/**
+ * Constructs a parser for the given tokens.
+ * @param {Array} tokens - Tokens to parse.
+ */
 export default class Parser {
     constructor(tokens) {
         this.tokens = tokens;

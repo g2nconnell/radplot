@@ -167,6 +167,52 @@ describe("main UI handlers", () => {
         expect(document.querySelector("#xyValueTable tbody tr:last-child").textContent).toBe("0.00001.000");
     });
 
+    it("plots multiple Cartesian expressions and labels their table rows", () => {
+        const form = buildDom({
+            chartType: "cartesian",
+            functionText: "x\n\n2 * x",
+            xaxisRange: "0,2",
+            plotName: ""
+        });
+        form.querySelector("[name='functionText']").outerHTML = '<textarea name="functionText"></textarea>';
+        form.querySelector("textarea[name='functionText']").value = "x\n\n2 * x";
+
+        generatePlot({ preventDefault: vi.fn(), target: form });
+
+        expect(window.alert).not.toHaveBeenCalled();
+        const traces = plotlyMock.newPlot.mock.calls[0][1];
+        expect(traces).toHaveLength(2);
+        expect(traces.map(trace => trace.name)).toEqual(["y = x", "y = 2 * x"]);
+        expect(document.querySelector("#xyValueTable thead").textContent).toContain("Expression");
+        expect(document.querySelectorAll("#xyValueTable tbody tr")).toHaveLength(200);
+        expect(document.querySelector("#xyValueTable tbody tr:first-child td").textContent).toBe("y = x");
+        expect(document.querySelector("#xyValueTable tbody tr:nth-child(101) td").textContent).toBe("y = 2 * x");
+    });
+
+    it("plots multiple polar expressions and labels their table rows", () => {
+        const form = buildDom({
+            functionText: "theta\n\n2 * theta",
+            thetasToUse: "0,90",
+            plotName: ""
+        });
+        form.querySelector("[name='functionText']").outerHTML = '<textarea name="functionText"></textarea>';
+        form.querySelector("textarea[name='functionText']").value = "theta\n\n2 * theta";
+
+        generatePlot({ preventDefault: vi.fn(), target: form });
+
+        const traces = plotlyMock.newPlot.mock.calls[0][1];
+        expect(traces).toHaveLength(4);
+        expect(traces.map(trace => trace.name)).toEqual([
+            "r = theta",
+            "r = theta (Negative r)",
+            "r = 2 * theta",
+            "r = 2 * theta (Negative r)"
+        ]);
+        expect(document.querySelectorAll("#rValueTable tbody tr")).toHaveLength(4);
+        expect(document.querySelector("#rValueTable tbody tr:first-child td").textContent).toBe("r = theta");
+        expect(document.querySelector("#rValueTable tbody tr:last-child td").textContent).toBe("r = 2 * theta");
+    });
+
     it("keeps all Cartesian results when requested x values are not found", () => {
         const form = buildDom({ chartType: "cartesian" });
         const plotData = {
