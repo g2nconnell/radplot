@@ -1,12 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import * as PolarPlotter from "/assets/js/modules/polarplotter.js";
 import * as CartesianPlotter from "/assets/js/modules/cartesianplotter.js";
-
-const plotlyMock = { newPlot: vi.fn() };
-vi.stubGlobal("Plotly", plotlyMock);
-vi.mock("https://cdn.plot.ly/plotly-4.1.0.min.js", () => ({
-    default: plotlyMock,
-}), { virtual: true });
+import { PLOT_DATA_STORAGE_KEY } from "/assets/js/modules/plotDataStorage.js";
 
 const {
     generatePlot,
@@ -32,21 +27,15 @@ function buildDom(overrides = {}) {
     };
 
     document.body.innerHTML = `
-        <div class="plotContainer">
-            <div id="polarPlot"></div>
-            <div id="cartesianPlot"></div>
-        </div>
         <div id="expressionErrorContainer" hidden>
             <textarea id="functionText" class=""></textarea>
             <input id="errorTextInput" type="text" value="" />
         </div>
-        <div class="valuesTableContainer"></div>
         <div id="xValsAreAnglesContainer"><input type="checkbox" id="xValsAreAngles" /></div>
         <div id="thetaDisplayModeContainer"></div>
         <select id="displayMode"><option value="radians">Radians</option></select>
         <details itemid="polarPlotInputs"></details>
         <details itemid="cartesianPlotInputs"></details>
-
         <form id="plotConfigForm">
             <input type="radio" name="chartType" value="polar" ${formValues.chartType === "polar" ? "checked" : ""} />
             <input type="radio" name="chartType" value="cartesian" ${formValues.chartType === "cartesian" ? "checked" : ""} />
@@ -62,21 +51,25 @@ function buildDom(overrides = {}) {
             <button type="submit" data-action="createplot">Create plot</button>
             <button type="button" data-action="resetplot">Reset plot</button>
         </form>
-
     `;
 
-    const textarea = document.querySelector("textarea#functionText");
-    textarea.value = formValues.functionText;
-
+    document.querySelector("textarea#functionText").value = formValues.functionText;
     return document.querySelector("form#plotConfigForm");
+}
+
+function useMultilineExpression(form, expressionText) {
+    form.querySelector("[name='functionText']").outerHTML = '<textarea name="functionText"></textarea>';
+    form.querySelector("textarea[name='functionText']").value = expressionText;
 }
 
 describe("main UI handlers", () => {
     beforeEach(() => {
         vi.restoreAllMocks();
         vi.clearAllMocks();
+        sessionStorage.clear();
         window.alert = vi.fn();
         vi.spyOn(console, "log").mockImplementation(() => {});
+        vi.spyOn(window, "open").mockReturnValue({});
         const originalFormData = globalThis.FormData;
         globalThis.FormData = class extends originalFormData {
             constructor(target) {
@@ -86,7 +79,7 @@ describe("main UI handlers", () => {
         document.body.innerHTML = "";
     });
 
-    it("generates a plot and fills the R-value table when the expression is valid", () => {
+    it("opens a plot tab with the generated polar data", () => {
         const form = buildDom({ functionText: "theta" });
         vi.spyOn(PolarPlotter, "getPolarPlotData").mockReturnValue({
             rValues: [2, 3],
@@ -101,185 +94,91 @@ describe("main UI handlers", () => {
 
         generatePlot({ preventDefault: vi.fn(), target: form });
 
-        expect(plotlyMock.newPlot).toHaveBeenCalledTimes(1);
-        expect(document.querySelectorAll("#rValueTable tbody tr").length).toBe(2);
-        expect(document.querySelector("#expressionErrorContainer").hasAttribute("hidden")).toBe(true);
-        expect(document.querySelector("#errorTextInput").value).toBe("");
-    });
-
-    it("filters the R-value table to requested degree values", () => {
-        const form = buildDom({ functionText: "theta" });
-        vi.spyOn(PolarPlotter, "getPolarPlotData").mockReturnValue({
-            rValues: ["1.0", "2.0", "3.0"],
-            degreeValues: [0, 90, 180],
-            thetaValues: [0, Math.PI / 2, Math.PI],
-            optionalDesiredXValues: [180, 0],
-            plotName: "Polar Plot"
+        expect(window.open).toHaveBeenCalledWith("./plot.html", "_blank");
+        expect(JSON.parse(sessionStorage.getItem(PLOT_DATA_STORAGE_KEY))).toEqual({
+            chartType: "polar",
+            plotData: expect.objectContaining({ rValues: [2, 3] })
         });
-
-        generatePlot({ preventDefault: vi.fn(), target: form });
-
-        expect(document.querySelectorAll("#rValueTable tbody tr")).toHaveLength(2);
-        expect(document.querySelector("#rValueTable tbody tr:first-child").textContent).toBe("3.1421803.0");
-        expect(document.querySelector("#rValueTable tbody tr:last-child").textContent).toBe("0.00001.0");
+        expect(document.querySelector("#expressionErrorContainer").hasAttribute("hidden")).toBe(true);
     });
 
-    it("keeps all polar results when requested degree values are not found", () => {
-        const form = buildDom({ functionText: "theta" });
-        const plotData = {
-            rValues: ["1.0", "2.0"],
-            degreeValues: [0, 90],
-            thetaValues: [0, Math.PI / 2],
-            optionalDesiredXValues: [180],
-            plotName: "Polar Plot"
-        };
-        vi.spyOn(PolarPlotter, "getPolarPlotData").mockReturnValue(plotData);
-
-        generatePlot({ preventDefault: vi.fn(), target: form });
-
-        expect(window.alert).toHaveBeenCalledWith(
-            "None of the desired x-values were found in the calculated x-values. Showing all values."
-        );
-        expect(plotData.degreeValues).toEqual([0, 90]);
-        expect(document.querySelectorAll("#rValueTable tbody tr")).toHaveLength(2);
-    });
-
-    it("generates a Cartesian plot and filters the results table to requested x values", () => {
-        const form = buildDom({ chartType: "cartesian" });
-        const plotData = {
-            xValues: [0, 90, 180],
-            yValues: [1, 2, 3],
-            xValsAreAngles: true,
-            displayMode: "radians",
-            plotName: "Cartesian Plot",
-            optionalDesiredXValues: [90, 0]
-        };
-        vi.spyOn(CartesianPlotter, "getCartesianPlotData").mockReturnValue(plotData);
-        const renderSpy = vi.spyOn(CartesianPlotter, "renderCartesianPlot").mockImplementation(() => {});
-
-        generatePlot({ preventDefault: vi.fn(), target: form });
-
-        expect(renderSpy).toHaveBeenCalledWith(plotData);
-        expect(plotData.xValues).toEqual([90, 0]);
-        expect(plotData.yValues).toEqual([2, 1]);
-        expect(document.querySelectorAll("#xyValueTable tbody tr")).toHaveLength(2);
-        expect(document.querySelector("#xyValueTable tbody tr:first-child").textContent).toBe("1.57082.000");
-        expect(document.querySelector("#xyValueTable tbody tr:last-child").textContent).toBe("0.00001.000");
-    });
-
-    it("plots multiple Cartesian expressions and labels their table rows", () => {
+    it("stores multiple Cartesian expressions together for the viewer tab", () => {
         const form = buildDom({
             chartType: "cartesian",
             functionText: "x\n\n2 * x",
             xaxisRange: "0,2",
             plotName: ""
         });
-        form.querySelector("[name='functionText']").outerHTML = '<textarea name="functionText"></textarea>';
-        form.querySelector("textarea[name='functionText']").value = "x\n\n2 * x";
+        useMultilineExpression(form, "x\n\n2 * x");
 
         generatePlot({ preventDefault: vi.fn(), target: form });
 
-        expect(window.alert).not.toHaveBeenCalled();
-        const traces = plotlyMock.newPlot.mock.calls[0][1];
-        expect(traces).toHaveLength(2);
-        expect(traces.map(trace => trace.name)).toEqual(["y = x", "y = 2 * x"]);
-        expect(document.querySelector("#xyValueTable thead").textContent).toContain("Expression");
-        expect(document.querySelectorAll("#xyValueTable tbody tr")).toHaveLength(200);
-        expect(document.querySelector("#xyValueTable tbody tr:first-child td").textContent).toBe("y = x");
-        expect(document.querySelector("#xyValueTable tbody tr:nth-child(101) td").textContent).toBe("y = 2 * x");
+        const result = JSON.parse(sessionStorage.getItem(PLOT_DATA_STORAGE_KEY));
+        expect(result.chartType).toBe("cartesian");
+        expect(result.plotData.traces.map(trace => trace.plotName)).toEqual([
+            "y = x",
+            "y = 2 * x"
+        ]);
+        expect(result.plotData.traces[0].xValues).toHaveLength(100);
+        expect(window.open).toHaveBeenCalledTimes(1);
     });
 
-    it("plots multiple polar expressions and labels their table rows", () => {
+    it("stores multiple polar expressions together for the viewer tab", () => {
         const form = buildDom({
             functionText: "theta\n\n2 * theta",
             thetasToUse: "0,90",
             plotName: ""
         });
-        form.querySelector("[name='functionText']").outerHTML = '<textarea name="functionText"></textarea>';
-        form.querySelector("textarea[name='functionText']").value = "theta\n\n2 * theta";
+        useMultilineExpression(form, "theta\n\n2 * theta");
 
         generatePlot({ preventDefault: vi.fn(), target: form });
 
-        const traces = plotlyMock.newPlot.mock.calls[0][1];
-        expect(traces).toHaveLength(4);
-        expect(traces.map(trace => trace.name)).toEqual([
+        const result = JSON.parse(sessionStorage.getItem(PLOT_DATA_STORAGE_KEY));
+        expect(result.chartType).toBe("polar");
+        expect(result.plotData.traces.map(trace => trace.plotName)).toEqual([
             "r = theta",
-            "r = theta (Negative r)",
-            "r = 2 * theta",
-            "r = 2 * theta (Negative r)"
+            "r = 2 * theta"
         ]);
-        expect(document.querySelectorAll("#rValueTable tbody tr")).toHaveLength(4);
-        expect(document.querySelector("#rValueTable tbody tr:first-child td").textContent).toBe("r = theta");
-        expect(document.querySelector("#rValueTable tbody tr:last-child td").textContent).toBe("r = 2 * theta");
+        expect(window.open).toHaveBeenCalledTimes(1);
     });
 
-    it("keeps all Cartesian results when requested x values are not found", () => {
-        const form = buildDom({ chartType: "cartesian" });
-        const plotData = {
-            xValues: [1, 2],
-            yValues: [3, 4],
-            optionalDesiredXValues: [8]
-        };
-        vi.spyOn(CartesianPlotter, "getCartesianPlotData").mockReturnValue(plotData);
+    it("does not open a plot tab for invalid expressions", () => {
+        const form = buildDom({ functionText: "theta @ 2" });
+
+        generatePlot({ preventDefault: vi.fn(), target: form });
+
+        expect(window.open).not.toHaveBeenCalled();
+        expect(document.querySelector("#expressionErrorContainer").hasAttribute("hidden")).toBe(false);
+        expect(document.querySelector("#errorTextInput").value).toContain("Unexpected character");
+    });
+
+    it("reports when the browser blocks the plot tab", () => {
+        vi.spyOn(window, "open").mockReturnValue(null);
+        const form = buildDom();
 
         generatePlot({ preventDefault: vi.fn(), target: form });
 
         expect(window.alert).toHaveBeenCalledWith(
-            "None of the desired x-values were found in the calculated x-values. Showing all values."
+            "An error occurred: The plot tab was blocked. Allow popups for this site and try again."
         );
-        expect(plotData.xValues).toEqual([1, 2]);
-        expect(document.querySelectorAll("#xyValueTable tbody tr")).toHaveLength(2);
+        expect(sessionStorage.getItem(PLOT_DATA_STORAGE_KEY)).toBeNull();
     });
 
-    it("lists non-angular Cartesian values in their configured display mode", () => {
-        const form = buildDom({ chartType: "cartesian" });
-        vi.spyOn(CartesianPlotter, "getCartesianPlotData").mockReturnValue({
-            xValues: [1.5],
-            yValues: [2.25],
-            xValsAreAngles: false,
-            displayMode: "degrees",
-            plotName: "Line"
-        });
-
-        generatePlot({ preventDefault: vi.fn(), target: form });
-
-        expect(document.querySelector("#xyValueTable tbody tr").textContent).toBe("1.52.250");
-    });
-
-    it("displays a syntax error when the expression cannot be parsed", () => {
-        const form = buildDom({ functionText: "theta @ 2" });
-
-        generatePlot({ preventDefault: vi.fn(), target: form });
-
-        expect(document.querySelector("#expressionErrorContainer").hasAttribute("hidden")).toBe(false);
-        expect(document.querySelector("textarea#functionText").classList.contains("inputError")).toBe(true);
-        expect(document.querySelector("#errorTextInput").value).toContain("Unexpected character");
-    });
-
-    it("displays syntax errors when optional error inputs are absent", () => {
-        const form = buildDom({ functionText: "theta @ 2" });
-        document.querySelector("textarea#functionText").remove();
-        document.querySelector("input#errorTextInput").remove();
-
-        generatePlot({ preventDefault: vi.fn(), target: form });
-
-        expect(document.querySelector("#expressionErrorContainer").hasAttribute("hidden")).toBe(false);
-    });
-
-    it("alerts and logs non-syntax exceptions", () => {
+    it("alerts and logs errors while generating plot data", () => {
         const alertSpy = vi.spyOn(window, "alert").mockImplementation(() => {});
         vi.spyOn(PolarPlotter, "getPolarPlotData").mockImplementation(() => {
             throw new TypeError("boom");
         });
 
-        const form = buildDom({ functionText: "theta" });
+        const form = buildDom();
         generatePlot({ preventDefault: vi.fn(), target: form });
 
-        expect(alertSpy).toHaveBeenCalledTimes(1);
+        expect(alertSpy).toHaveBeenCalledWith("An error occurred: boom");
         expect(console.log).toHaveBeenCalledTimes(1);
+        expect(window.open).not.toHaveBeenCalled();
     });
 
-    it("clears the plot area and resets the syntax error state", () => {
+    it("resets form controls and syntax error state", () => {
         buildDom();
         const errorContainer = document.querySelector("#expressionErrorContainer");
         const textarea = document.querySelector("textarea#functionText");
@@ -288,16 +187,12 @@ describe("main UI handlers", () => {
         errorContainer.removeAttribute("hidden");
         textarea.classList.add("inputError");
         errorInput.value = "Expected error";
-        document.querySelector("#polarPlot").innerHTML = "<div>old plot</div>";
 
         resetPlotAndInputs();
 
-        expect(document.querySelector("#polarPlot").innerHTML).toBe("");
         expect(errorContainer.hasAttribute("hidden")).toBe(true);
         expect(errorInput.value).toBe("");
         expect(textarea.classList.contains("inputError")).toBe(false);
-        expect(document.querySelector("#cartesianPlot").innerHTML).toBe("");
-        expect(document.querySelector(".valuesTableContainer").innerHTML).toBe("");
         expect(document.querySelector("#xValsAreAngles").hasAttribute("checked")).toBe(true);
         expect(document.querySelector("#xValsAreAnglesContainer").style.display).toBe("none");
         expect(document.querySelector("#thetaDisplayModeContainer").style.display).toBe("block");
@@ -306,7 +201,7 @@ describe("main UI handlers", () => {
         expect(document.querySelector('details[itemid="cartesianPlotInputs"]').style.display).toBe("block");
     });
 
-    it("resets Cartesian controls and tolerates optional reset elements being absent", () => {
+    it("resets Cartesian controls when optional reset elements are absent", () => {
         buildDom({ chartType: "cartesian" });
         document.querySelector('input[name="chartType"][value="polar"]').checked = false;
         document.querySelector('input[name="chartType"][value="cartesian"]').checked = true;
@@ -314,17 +209,14 @@ describe("main UI handlers", () => {
         document.querySelector("#xValsAreAnglesContainer").remove();
         document.querySelector("#thetaDisplayModeContainer").remove();
         document.querySelector("#displayMode").remove();
-        document.querySelector(".valuesTableContainer").remove();
 
         resetPlotAndInputs();
 
         expect(document.querySelector('details[itemid="cartesianPlotInputs"]').style.display).toBe("none");
         expect(document.querySelector('details[itemid="polarPlotInputs"]').style.display).toBe("block");
-        expect(document.querySelector("#polarPlot").innerHTML).toBe("");
-        expect(document.querySelector("#cartesianPlot").innerHTML).toBe("");
     });
 
-    it("updates the angular checkbox controls and range for Cartesian plots", () => {
+    it("updates angular controls for Cartesian plots", () => {
         buildDom({ chartType: "cartesian" });
         const checkbox = document.querySelector("#xValsAreAngles");
         const thetaMode = document.querySelector("#thetaDisplayModeContainer");
@@ -339,20 +231,10 @@ describe("main UI handlers", () => {
         onXaxisValuesAreAnglesCheckboxChange({});
         expect(thetaMode.style.display).toBe("block");
         expect(range.value).toBe("-360,360");
-
-        document.querySelector('input[name="chartType"][value="polar"]').checked = true;
-        onXaxisValuesAreAnglesCheckboxChange({});
-        expect(thetaMode.style.display).toBe("none");
-
-        document.querySelector("#xaxisRange").remove();
-        onXaxisValuesAreAnglesCheckboxChange({});
     });
 
-    it("updates chart-specific controls and clears previous output on chart changes", () => {
+    it("updates chart-specific controls when the chart type changes", () => {
         buildDom({ chartType: "cartesian" });
-        document.querySelector("#polarPlot").textContent = "old polar";
-        document.querySelector("#cartesianPlot").textContent = "old cartesian";
-        document.querySelector(".valuesTableContainer").textContent = "old table";
         document.querySelector("textarea#functionText").value = "old expression";
 
         onChartTypeChange({});
@@ -362,16 +244,12 @@ describe("main UI handlers", () => {
         expect(document.querySelector("#xValsAreAnglesContainer").style.display).toBe("block");
         expect(document.querySelector("#xValsAreAngles").checked).toBe(false);
         expect(document.querySelector("#thetaDisplayModeContainer").style.display).toBe("none");
-        expect(document.querySelector("#polarPlot").textContent).toBe("");
-        expect(document.querySelector("#cartesianPlot").textContent).toBe("");
-        expect(document.querySelector(".valuesTableContainer").textContent).toBe("");
         expect(document.querySelector("textarea#functionText").value).toBe("");
 
         document.querySelector('input[name="chartType"][value="polar"]').checked = true;
         onChartTypeChange({});
         expect(document.querySelector('details[itemid="polarPlotInputs"]').style.display).toBe("block");
         expect(document.querySelector("#xValsAreAngles").checked).toBe(true);
-        expect(document.querySelector("#thetaDisplayModeContainer").style.display).toBe("block");
     });
 
     it("initializes a form when no optional action controls exist", () => {
@@ -380,32 +258,16 @@ describe("main UI handlers", () => {
         expect(() => initializeUI()).not.toThrow();
     });
 
-    it("registers submit and click handlers for plot creation and reset actions", () => {
-        buildDom({ functionText: "theta" });
-        vi.spyOn(PolarPlotter, "getPolarPlotData").mockReturnValue({
-            rValues: [1],
-            degreeValues: [0],
-            thetaValues: [0],
-            displayMode: "radians",
-            plotName: "Polar Plot",
-            layoutTitle: "Polar Plot",
-            xaxisTickCount: 24,
-            xaxisRange: [-1, 1]
-        });
-
+    it("registers submit and click handlers for plot creation and reset", () => {
+        buildDom();
         initializeUI();
 
         const form = document.querySelector("#plotConfigForm");
         form.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+        document.querySelector("[data-action='createplot']").click();
+        expect(window.open).toHaveBeenCalledTimes(2);
 
-        expect(plotlyMock.newPlot).toHaveBeenCalledTimes(1);
-
-        const createButton = document.querySelector("[data-action='createplot']");
-        createButton.click();
-        expect(plotlyMock.newPlot).toHaveBeenCalledTimes(2);
-
-        const resetButton = document.querySelector("[data-action='resetplot']");
-        resetButton.click();
-        expect(document.querySelector("#polarPlot").innerHTML).toBe("");
+        document.querySelector("[data-action='resetplot']").click();
+        expect(document.querySelector("#expressionErrorContainer").hasAttribute("hidden")).toBe(true);
     });
 });

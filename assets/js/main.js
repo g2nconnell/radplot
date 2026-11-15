@@ -1,7 +1,7 @@
-import "https://cdn.plot.ly/plotly-4.1.0.min.js";
 import Configuration from "./modules/configuration.js";
 import * as PolarPlotter from "./modules/polarplotter.js";
 import * as CartesianPlotter from "./modules/cartesianplotter.js";
+import { PLOT_DATA_STORAGE_KEY } from "./modules/plotDataStorage.js";
 
 export function generatePlot(event) {
     event.preventDefault();
@@ -18,16 +18,16 @@ export function generatePlot(event) {
         const plotData = expressionPlotData.length > 1
             ? { ...expressionPlotData[0], traces: expressionPlotData }
             : expressionPlotData[0];
-        if (isPolar) {
-            PolarPlotter.renderPolarPlot(plotData);
-        } else {
-            CartesianPlotter.renderCartesianPlot(plotData);
-        }
         displaySyntaxError({}, true);
-        if (isPolar) {
-            updateRvalueTable(plotData);
-        } else {
-            updateXYvalueTable(plotData);
+
+        sessionStorage.setItem(PLOT_DATA_STORAGE_KEY, JSON.stringify({
+            chartType: config.chartType,
+            plotData
+        }));
+        const plotWindow = window.open("./plot.html", "_blank");
+        if (!plotWindow) {
+            sessionStorage.removeItem(PLOT_DATA_STORAGE_KEY);
+            throw new Error("The plot tab was blocked. Allow popups for this site and try again.");
         }
     } catch (error) {
         if (error instanceof SyntaxError) {
@@ -36,180 +36,6 @@ export function generatePlot(event) {
             alert(`An error occurred: ${error.message}`);
             console.log(error.stack);
         }
-    }
-}
-
-function createRValueTable(plotData, includeExpression) {
-    const tableContainer = document.querySelector('div.valuesTableContainer');
-    if (tableContainer) {
-        tableContainer.innerHTML = `
-            <table id="rValueTable">
-                <caption>${plotData.plotName}</caption>
-                <thead>
-                    <tr>
-                        ${includeExpression ? "<th>Expression</th>" : ""}
-                        <th>theta: radians</th>
-                        <th>theta: degrees</th>
-                        <th>r-value</th>
-                    </tr>
-                </thead>
-                <tbody>
-                </tbody>
-            </table>`;
-    }
-}
-
-function createXYValueTable(plotData, includeExpression) {
-    const tableContainer = document.querySelector('div.valuesTableContainer');
-    if (tableContainer) {
-        tableContainer.innerHTML = `
-            <table id="xyValueTable">
-                <caption>${plotData.plotName}</caption>
-                <thead>
-                    <tr>
-                        ${includeExpression ? "<th>Expression</th>" : ""}
-                        <th>X-Value</th>
-                        <th>Y-Value</th>
-                    </tr>
-                </thead>
-                <tbody>
-                </tbody>
-            </table>`;
-    }
-}
-
-function updateRvalueTable(plotData) {
-    const expressionData = plotData.traces ?? [plotData];
-    const includeExpression = expressionData.length > 1;
-    createRValueTable(plotData, includeExpression);
-    const table = document.querySelector('table#rValueTable');
-    appendRTableRows(table, expressionData, includeExpression);
-}
-
-function updateXYvalueTable(plotData) {
-    const expressionData = plotData.traces ?? [plotData];
-    const includeExpression = expressionData.length > 1;
-    createXYValueTable(plotData, includeExpression);
-    const table = document.querySelector('table#xyValueTable');
-    appendXYTableRows(table, expressionData, includeExpression);
-}
-
-function appendRTableRows(table, expressionData, includeExpression) {
-    let hasDesiredValues = false;
-    let missingDesiredValue = false;
-    for (const plotData of expressionData) {
-        if (table && plotData && plotData.rValues && plotData.degreeValues && plotData.thetaValues) {
-            hasDesiredValues = hasDesiredValues || Boolean(plotData.optionalDesiredXValues?.length);
-            if (!filterDesiredDegreeValues(plotData) && plotData.optionalDesiredXValues?.length) {
-                missingDesiredValue = true;
-            }
-            const len = plotData.rValues.length;
-            for (let index = 0; index < len; index++) {
-                const row = document.createElement('tr');
-                if (includeExpression) {
-                    const expressionTd = document.createElement('td');
-                    expressionTd.textContent = plotData.plotName;
-                    row.appendChild(expressionTd);
-                }
-                const degreeTd = document.createElement('td');
-                const radianTd = document.createElement('td');
-                const rValueTd = document.createElement('td');
-                degreeTd.textContent = plotData.degreeValues[index].toFixed(0);
-                radianTd.textContent = plotData.thetaValues[index].toFixed(3);
-                rValueTd.textContent = plotData.rValues[index];
-                row.appendChild(radianTd);
-                row.appendChild(degreeTd);
-                row.appendChild(rValueTd);
-                table.tBodies[0].appendChild(row);
-            }
-        }
-    }
-    if (hasDesiredValues && missingDesiredValue) {
-        alert("None of the desired x-values were found in the calculated x-values. Showing all values.");
-    }
-}
-
-function filterDesiredDegreeValues(plotData) {
-    const desiredXValues = plotData.optionalDesiredXValues;
-    if (desiredXValues && Array.isArray(desiredXValues) && desiredXValues.length > 0) {
-        const filteredDegreeValues = [];
-        const filteredRValues = [];
-        const filteredThetaValues = [];
-        for (const desiredDegree of desiredXValues) {
-            const index = plotData.degreeValues.indexOf(desiredDegree);
-            if (index !== -1) {
-                filteredDegreeValues.push(plotData.degreeValues[index]);
-                filteredRValues.push(plotData.rValues[index]);
-                filteredThetaValues.push(plotData.thetaValues[index]);
-            }
-        }
-        if (filteredDegreeValues.length > 0) {
-            plotData.degreeValues = filteredDegreeValues;
-            plotData.rValues = filteredRValues;
-            plotData.thetaValues = filteredThetaValues;
-            return true;
-        }
-        return false;
-    }
-    return true;
-}
-
-function filterDesiredXValues(plotData) {
-    const desiredXValues = plotData.optionalDesiredXValues;
-    if (desiredXValues && Array.isArray(desiredXValues) && desiredXValues.length > 0) {
-        // Filter the xValues and yValues based on the desiredXValues 
-        const filteredXValues = [];
-        const filteredYValues = [];
-        for (const desiredX of desiredXValues) {
-            const index = plotData.xValues.indexOf(desiredX);
-            if (index !== -1) {
-                filteredXValues.push(plotData.xValues[index]);
-                filteredYValues.push(plotData.yValues[index]);
-            }
-        }
-        if (filteredXValues.length > 0) {
-            plotData.xValues = filteredXValues;
-            plotData.yValues = filteredYValues;
-            return true;
-        }
-        return false;
-    }
-    return true;
-}
-
-function appendXYTableRows(table, expressionData, includeExpression) {
-    let hasDesiredValues = false;
-    let missingDesiredValue = false;
-    for (const plotData of expressionData) {
-        if (table && plotData && plotData.xValues && plotData.yValues) {
-            hasDesiredValues = hasDesiredValues || Boolean(plotData.optionalDesiredXValues?.length);
-            if (!filterDesiredXValues(plotData) && plotData.optionalDesiredXValues?.length) {
-                missingDesiredValue = true;
-            }
-            const len = plotData.xValues.length;
-            for (let index = 0; index < len; index++) {
-                const row = document.createElement('tr');
-                if (includeExpression) {
-                    const expressionTd = document.createElement('td');
-                    expressionTd.textContent = plotData.plotName;
-                    row.appendChild(expressionTd);
-                }
-                const xValueTd = document.createElement('td');
-                const yValueTd = document.createElement('td');
-                let xValue = plotData.xValues[index];
-                if (plotData.xValsAreAngles && plotData.displayMode === "radians") {
-                    xValue = (xValue * Math.PI / 180).toFixed(4); // Convert degrees to radians for display
-                }
-                xValueTd.textContent = xValue;
-                yValueTd.textContent = plotData.yValues[index] !== null ? plotData.yValues[index].toFixed(3) : "undefined";
-                row.appendChild(xValueTd);
-                row.appendChild(yValueTd);
-                table.tBodies[0].appendChild(row);
-            }
-        }
-    }
-    if (hasDesiredValues && missingDesiredValue) {
-        alert("None of the desired x-values were found in the calculated x-values. Showing all values.");
     }
 }
 
@@ -234,9 +60,6 @@ function displaySyntaxError(error, reset=false) {
 
 export function resetPlotAndInputs() {
     const isPolar = document.querySelector('input[name="chartType"]:checked').value === 'polar';
-    for (const plotContainer of document.querySelectorAll('div.plotContainer > div')) {
-        plotContainer.innerHTML = "";
-    }
     const checkbox = document.querySelector('input[type="checkbox"]#xValsAreAngles');
     if (checkbox) {    
         checkbox.setAttribute('checked', true);
@@ -263,11 +86,6 @@ export function resetPlotAndInputs() {
         polarDetails.removeAttribute('open');
         polarDetails.style.display = 'block';
     }
-    const tableContainer = document.querySelector('div.valuesTableContainer');
-    if (tableContainer) {
-        tableContainer.innerHTML = "";
-    }
-
     displaySyntaxError({}, true);
 }
 
@@ -306,13 +124,6 @@ export function onChartTypeChange(event) {
     const thetaDisplayModeContainer = document.querySelector('div#thetaDisplayModeContainer');
     if (thetaDisplayModeContainer) {
         thetaDisplayModeContainer.style.display = isPolar ? 'block' : 'none';
-    }
-    for (const plotContainer of document.querySelectorAll('div.plotContainer > div')) {
-        plotContainer.innerHTML = "";
-    }
-    const tableContainer = document.querySelector('div.valuesTableContainer');
-    if (tableContainer) {
-        tableContainer.innerHTML = "";
     }
     const textarea = document.querySelector('textarea#functionText');
     if (textarea) {

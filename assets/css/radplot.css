@@ -229,3 +229,12 @@ div.popoverContent {
     background-color: cornsilk;
     border-radius: 20px;
 }
+
+a {
+    color: #6dd8f0;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
