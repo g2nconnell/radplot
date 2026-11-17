@@ -215,7 +215,7 @@ button.infoButton {
     border: none;
     padding: 0px;
     margin-left: 5px;
-    background-image: url(/assets/images/info_icon_25x25.jpg);
+    background-image: url(../images/info_icon_25x25.jpg);
     width: 25px;
     height: 25px;
     cursor: pointer;

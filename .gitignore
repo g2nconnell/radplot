@@ -1,5 +1,6 @@
 node_modules/
-.vitest/*
-docs/**
-coverage/**
+.vitest/
+docs/
+coverage/
+coverage-final.json
 package-lock.json

@@ -118,6 +118,87 @@ describe("plot viewer", () => {
         expect(document.querySelectorAll("#xyValueTable tbody tr")).toHaveLength(2);
     });
 
+    it("labels polar traces and alerts when none of their requested angles match", () => {
+        renderPlotResult({
+            chartType: "polar",
+            plotData: {
+                plotName: "Polar traces",
+                traces: [
+                    {
+                        plotName: "r = 1",
+                        rValues: ["1"],
+                        degreeValues: [0],
+                        thetaValues: [0]
+                    },
+                    {
+                        plotName: "r = 2",
+                        rValues: ["2", "3"],
+                        degreeValues: [90, 180],
+                        thetaValues: [Math.PI / 2, Math.PI],
+                        optionalDesiredXValues: [45]
+                    }
+                ]
+            }
+        });
+
+        expect(document.querySelector("#rValueTable thead").textContent).toContain("Expression");
+        expect(document.querySelectorAll("#rValueTable tbody tr")).toHaveLength(3);
+        expect(document.querySelector("#rValueTable tbody tr:last-child").textContent).toBe("r = 23.1421803");
+        expect(window.alert).toHaveBeenCalledWith(
+            "None of the desired x-values were found in the calculated x-values. Showing all values."
+        );
+    });
+
+    it("renders undefined Cartesian values without angle conversion", () => {
+        renderPlotResult({
+            chartType: "cartesian",
+            plotData: {
+                xValues: [2],
+                yValues: [null],
+                plotName: "Discontinuous",
+                displayMode: "degrees"
+            }
+        });
+
+        expect(document.querySelector("#xyValueTable tbody tr").textContent).toBe("2undefined");
+    });
+
+    it("renders plots without a results table when its container is absent", () => {
+        document.querySelector(".valuesTableContainer").remove();
+
+        renderPlotResult({
+            chartType: "cartesian",
+            plotData: {
+                xValues: [0],
+                yValues: [1]
+            }
+        });
+
+        expect(plotlyMock.newPlot).toHaveBeenCalledTimes(1);
+        expect(document.querySelector("#xyValueTable")).toBeNull();
+    });
+
+    it("leaves the caption blank and skips incomplete polar traces", () => {
+        renderPlotResult({
+            chartType: "polar",
+            plotData: {
+                traces: [
+                    { rValues: ["1"], degreeValues: [0] },
+                    {}
+                ]
+            }
+        });
+
+        expect(document.querySelector("#rValueTable caption").textContent).toBe("");
+        expect(document.querySelectorAll("#rValueTable tbody tr")).toHaveLength(0);
+    });
+
+    it("rejects missing plot data and unsupported chart types", () => {
+        expect(() => renderPlotResult(null)).toThrow(TypeError);
+        expect(() => renderPlotResult({ chartType: "unknown", plotData: {} }))
+            .toThrow("Unsupported chart type 'unknown'.");
+    });
+
     it("loads and removes the stored result before rendering it", () => {
         sessionStorage.setItem(PLOT_DATA_STORAGE_KEY, JSON.stringify({
             chartType: "cartesian",
@@ -140,5 +221,24 @@ describe("plot viewer", () => {
 
         expect(document.querySelector("#plotError").hidden).toBe(false);
         expect(document.querySelector("#plotError").textContent).toContain("No plot data was found");
+    });
+
+    it("shows a message when stored plot data cannot be parsed", () => {
+        sessionStorage.setItem(PLOT_DATA_STORAGE_KEY, "{");
+
+        initializePlotViewer();
+
+        expect(document.querySelector("#plotError").hidden).toBe(false);
+        expect(document.querySelector("#plotError").textContent).toContain("JSON");
+        expect(sessionStorage.getItem(PLOT_DATA_STORAGE_KEY)).toBeNull();
+        expect(console.error).toHaveBeenCalledWith(expect.any(SyntaxError));
+    });
+
+    it("logs initialization errors when the error container is absent", () => {
+        document.querySelector("#plotError").remove();
+
+        initializePlotViewer();
+
+        expect(console.error).toHaveBeenCalledWith(expect.any(Error));
     });
 });
